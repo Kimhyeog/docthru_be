@@ -30,6 +30,8 @@ app.post("/users", async (req, res) => {
   res.json(newUser);
 });
 
+//테스트
+
 // 서버 실행
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
