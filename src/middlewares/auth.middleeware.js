@@ -17,4 +17,16 @@ function authMiddleware(req, res, next) {
   }
 }
 
+function authenticatedOnly(req, res, next) {
+  try {
+    const userId = req.userId;
+    const isAuthenticated = !!userId;
+    if (!isAuthenticated) throw new Error("401/Unauthenticated");
+
+    next();
+  } catch (e) {
+    next(e);
+  }
+}
+
 module.exports = { authMiddleware };
