@@ -1,3 +1,5 @@
+const { Prisma } = require("@prisma/client");
+
 function errorHandler(err, req, res, next) {
   console.error("error는 ", err);
 
