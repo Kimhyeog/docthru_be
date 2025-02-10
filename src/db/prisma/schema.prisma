@@ -14,11 +14,68 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(uuid())
-  email             String   @unique
+  id                String        @id @default(uuid())
+  email             String        @unique
   encryptedPassword String
-  nickname          String   @unique
-  createdAt         DateTime @default(now())
-  // 유저 등급 - 전문가,일반
-  //
+  nickname          String        @unique
+  createdAt         DateTime      @default(now())
+  grade             Grade
+  role              Role
+  Application       Application[]
+}
+
+model Challenge {
+  id              String        @id @default(uuid())
+  title           String
+  field           Field
+  docType         DocType
+  docUrl          String
+  deadLine        DateTime
+  progress        Boolean       @default(false)
+  participants    Int
+  maxParticipants Int
+  Application     Application[]
+}
+
+model Application {
+  id                  String            @id @default(uuid())
+  user                User              @relation(fields: [userId], references: [id])
+  challenge           Challenge         @relation(fields: [challengeId], references: [id])
+  userId              String
+  challengeId         String
+  status              ApplicationStatus @default(WAITING)
+  appliedAt           DateTime
+  invalidationComment String?
+  invaildatedAt       DateTime?
+}
+
+//바뀔예정 
+enum Role {
+  GENERAL
+  EXPERT
+  ADMIN
+}
+
+enum Grade {
+  GENERAL
+  EXPERT
+}
+
+enum Field {
+  NEXTJS
+  CAREER
+  MODERNJS
+  WEB
+}
+
+enum DocType {
+  BLOG
+  DOCS
+}
+
+enum ApplicationStatus {
+  WAITING
+  ACCEPTED
+  REJECTED
+  DELTED
 }
