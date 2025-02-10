@@ -29,4 +29,4 @@ function authenticatedOnly(req, res, next) {
   }
 }
 
-module.exports = { authMiddleware };
+module.exports = { authMiddleware, authenticatedOnly };

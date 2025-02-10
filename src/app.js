@@ -1,10 +1,14 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+
 const router = require("./controllers/route");
 const { errorHandler } = require("./middlewares/error.middleware");
+const swaggerSpec = require("../config/swagger");
 
 const app = express();
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // 미들웨어
 app.use(cors());

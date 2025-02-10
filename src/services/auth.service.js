@@ -37,7 +37,7 @@ const signUp = asyncHandler(async (req, res, next) => {
     data: { email, encryptedPassword, nickname },
   });
 
-  res.status(200).send(newUser);
+  res.status(201).send(newUser);
 });
 
 const logIn = asyncHandler(async (req, res, next) => {
@@ -47,12 +47,12 @@ const logIn = asyncHandler(async (req, res, next) => {
       where: { email },
       select: { encryptedPassword: true },
     });
-    if (!existingUser) throw new Error("400/user does not exist");
+    if (!existingUser) throw new Error("401/user does not exist");
     const passwordCheck = await bcrypt.compare(
       password,
       existingUser.encryptedPassword
     );
-    if (!passwordCheck) throw new Error("400/Incorrect password");
+    if (!passwordCheck) throw new Error("401/Incorrect password");
 
     const user = await prisma.user.findUniqueOrThrow({
       where: { email },
@@ -77,8 +77,8 @@ const refreshToken = asyncHandler(async (req, res, next) => {
     email,
     nickname,
   };
-  const { accessToken } = createToken(data);
-  res.status(200).send({ accessToken });
+  const { accessToken, refreshToken } = createToken(data);
+  res.status(200).send({ accessToken, refreshToken });
 });
 
 const authService = { signUp, logIn, refreshToken };

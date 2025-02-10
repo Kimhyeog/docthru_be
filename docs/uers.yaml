@@ -1,0 +1,48 @@
+paths:
+  /user/signup:
+    post:
+      summary: 회원가s입 API
+      description: 이메일, 닉네임, 비밀번호를 입력하여 회원가입을 진행합니다.
+      security:
+        - BearerAuth: []
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - nickname
+                - password
+              properties:
+                email:
+                  type: string
+                  example: "test@example.com"
+                nickname:
+                  type: string
+                  example: "JohnDoe"
+                password:
+                  type: string
+                  example: "securepassword123"
+      responses:
+        201:
+          description: 회원가입 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: "test@example.com"
+                  nickname:
+                    type: string
+                    example: "JohnDoe"
+        400:
+          description: 입력값 오류 (잘못된 이메일 형식, 중복된 이메일 등)
