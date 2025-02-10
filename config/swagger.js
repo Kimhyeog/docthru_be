@@ -22,6 +22,10 @@ const swaggerDefinition = {
       url: "http://localhost:5000", // 배포 후에는 실제 도메인으로 변경
       description: "Local server",
     },
+    {
+      url: "https://docthru-be-5u42.onrender.com", // 배포 후에는 실제 도메인으로 변경
+      description: "test server",
+    },
   ],
 };
 
