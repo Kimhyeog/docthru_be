@@ -4,12 +4,15 @@ const {
   validateGetChallenges,
   validateCreateChallenge,
 } = require("../../validate/challenge.validate");
-const { authenticatedOnly } = require("../../middlewares/auth.middleeware");
+const {
+  authenticatedOnly,
+  adminOnly,
+} = require("../../middlewares/auth.middleeware");
 
 const challengeRouter = express.Router();
 //챌린지 목록 보기
 challengeRouter.get("/", validateGetChallenges, challengeService.getChallenges);
-//특정 챌린지 복기기
+//특정 챌린지 보기
 challengeRouter.get("/:challengeId", challengeService.getChallenge);
 // 챌린지 생성
 challengeRouter.post(
@@ -21,7 +24,12 @@ challengeRouter.post(
 // 챌린지 참여하기
 challengeRouter.post(
   "/:challengeId/participation",
+  authenticatedOnly,
   challengeService.participateChallenge
 );
+// 어드민 챌린지 수정
+challengeRouter.put("/:challengeId", authenticatedOnly, adminOnly);
+// 어드민 챌린지 삭제
+challengeRouter.delete("/:challengeId", authenticatedOnly, adminOnly);
 
 module.exports = challengeRouter;

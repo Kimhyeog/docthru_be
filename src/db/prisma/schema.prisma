@@ -20,7 +20,7 @@ model User {
   nickname          String        @unique
   createdAt         DateTime      @default(now())
   grade             Grade?
-  role              Role? // 임시로
+  role              Role?         @default(GENERAL)
   application       Application[]
   participate       Participate[]
 }
