@@ -1,8 +1,8 @@
-const { DocType } = require("@prisma/client");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
 const getChallenges = asyncHandler(async (req, res, next) => {
+  //application 에서 신청 상태를 확인도 해야함 나중에 추가
   const { cursor, pageSize, keyword, orderBy, field, docType, progress } =
     req.query;
 
@@ -36,5 +36,30 @@ const getChallenge = asyncHandler(async (req, res, next) => {
   res.status(200).send(challenge);
 });
 
-const challengeService = { getChallenges, getChallenge };
+const createChallenge = asyncHandler(async (req, res, next) => {
+  // validation 추가하기
+  const userId = req.userId;
+  const { title, field, docType, docUrl, deadLine, maxParticipants, content } =
+    req.body;
+  const result = await prisma.$transaction(async (prisma) => {
+    const newChallenge = await prisma.challenge.create({
+      data: {
+        title,
+        field,
+        docType,
+        docUrl,
+        deadLine,
+        maxParticipants,
+        content,
+      },
+    });
+    await prisma.application.create({
+      data: { userId, challengeId: newChallenge.id },
+    });
+    return newChallenge;
+  });
+  res.status(200).send(result);
+});
+
+const challengeService = { getChallenges, getChallenge, createChallenge };
 module.exports = { challengeService };

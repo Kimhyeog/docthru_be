@@ -20,8 +20,9 @@ model User {
   nickname          String        @unique
   createdAt         DateTime      @default(now())
   grade             Grade?
-  role              Role?  // 임시로
+  role              Role? // 임시로
   Application       Application[]
+  Participate       Participate[]
 }
 
 model Challenge {
@@ -32,9 +33,12 @@ model Challenge {
   docUrl          String
   deadLine        DateTime
   progress        Boolean       @default(false)
-  participants    Int
+  participants    Int           @default(1)
   maxParticipants Int
+  content         String?
   Application     Application[]
+
+  Participate Participate[]
 }
 
 model Application {
@@ -44,9 +48,21 @@ model Application {
   userId              String
   challengeId         String
   status              ApplicationStatus @default(WAITING)
-  appliedAt           DateTime
+  appliedAt           DateTime          @default(now())
   invalidationComment String?
   invaildatedAt       DateTime?
+
+  @@unique([userId, challengeId])
+}
+
+model Participate {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  userId      String
+  challengeId String
+
+  @@unique([userId, challengeId])
 }
 
 //바뀔예정 

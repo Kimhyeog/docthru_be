@@ -18,6 +18,16 @@ const searchSchema = z.object({
     .optional(),
 });
 
+const createChallengeSchema = z.object({
+  title: z.string(),
+  field: fieldEnum,
+  docType: docTypeEnum,
+  docUrl: z.string().url({ message: "docUrl does not invalid " }),
+  deadLine: z.coerce.date(),
+  maxParticipants: z.number().int(),
+  content: z.string(),
+});
+
 function validateGetChallenges(req, res, next) {
   try {
     const parsedOption = searchSchema.safeParse({
@@ -39,6 +49,29 @@ function validateGetChallenges(req, res, next) {
   }
 }
 
+function validateCreateChallenge(req, res, next) {
+  try {
+    const parsedBody = createChallengeSchema.safeParse({
+      title: req.body.title,
+      field: req.body.field,
+      docType: req.body.docType,
+      docUrl: req.body.docUrl,
+      deadLine: req.body.deadLine,
+      maxParticipants: Number(req.body.maxParticipants),
+      content: req.body.content,
+    });
+
+    if (!parsedBody.success) {
+      throw new Error(`400/Validation error: ${parsedBody.error}`);
+    }
+    req.query = parsedBody.data;
+    next();
+  } catch (e) {
+    next(e);
+  }
+}
+
 module.exports = {
   validateGetChallenges,
+  validateCreateChallenge,
 };
