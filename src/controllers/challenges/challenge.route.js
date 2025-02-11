@@ -21,7 +21,7 @@ challengeRouter.post(
 // 챌린지 참여하기
 challengeRouter.post(
   "/:challengeId/participation",
-  challengeService.ParticipateChallenge
+  challengeService.participateChallenge
 );
 
 module.exports = challengeRouter;

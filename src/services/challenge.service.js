@@ -64,7 +64,7 @@ const createChallenge = asyncHandler(async (req, res, next) => {
   res.status(200).send(result);
 });
 
-const ParticipateChallenge = asyncHandler(async (req, res, next) => {
+const participateChallenge = asyncHandler(async (req, res, next) => {
   //1.useId 찾기
   //2.해당 챌린지 찾기기
   //3.해당 챌린지에 남은 인원이 있는지 확인하고 상태도 검사해야함 ACCEPTED 상태인지 //
@@ -115,6 +115,6 @@ const challengeService = {
   getChallenges,
   getChallenge,
   createChallenge,
-  ParticipateChallenge,
+  participateChallenge,
 };
 module.exports = { challengeService };
