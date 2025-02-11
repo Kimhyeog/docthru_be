@@ -108,6 +108,7 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
   res.status(200).send(result);
 });
 
+//데이러를 destructuring 안하고 data에 다 담아도 문제 없을까?
 const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
   await prisma.challenge.findFirstOrThrow({ where: { id: challengeId } });
