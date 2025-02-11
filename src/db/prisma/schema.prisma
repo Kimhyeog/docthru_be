@@ -21,8 +21,8 @@ model User {
   createdAt         DateTime      @default(now())
   grade             Grade?
   role              Role? // 임시로
-  Application       Application[]
-  Participate       Participate[]
+  application       Application[]
+  participate       Participate[]
 }
 
 model Challenge {
@@ -36,9 +36,9 @@ model Challenge {
   participants    Int           @default(1)
   maxParticipants Int
   content         String?
-  Application     Application[]
+  application     Application?
 
-  Participate Participate[]
+  participate Participate[]
 }
 
 model Application {
@@ -46,13 +46,12 @@ model Application {
   user                User              @relation(fields: [userId], references: [id])
   challenge           Challenge         @relation(fields: [challengeId], references: [id])
   userId              String
-  challengeId         String
+  challengeId         String            @unique
   status              ApplicationStatus @default(WAITING)
   appliedAt           DateTime          @default(now())
   invalidationComment String?
   invaildatedAt       DateTime?
 
-  @@unique([userId, challengeId])
 }
 
 model Participate {
