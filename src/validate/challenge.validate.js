@@ -22,7 +22,7 @@ function validateGetChallenges(req, res, next) {
   try {
     const parsedOption = searchSchema.safeParse({
       cursor: req.query.cursor,
-      pageSize: req.query.pageSize ? req.query.pageSize : 5,
+      pageSize: req.query.pageSize ? Number(req.query.pageSize) : 5,
       keyword: req.query.keyword,
       field: req.query.field,
       docType: req.query.docType,
