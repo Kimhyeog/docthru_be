@@ -6,11 +6,6 @@ const getChallenges = asyncHandler(async (req, res, next) => {
   const { cursor, pageSize, keyword, orderBy, field, docType, progress } =
     req.query;
 
-  // switch (x) {
-  //   case "waiting":
-  //   const sortOption = {}
-  // }
-
   const search = {
     OR: keyword
       ? [{ title: { contains: keyword, mode: "insensitive" } }]
@@ -24,7 +19,6 @@ const getChallenges = asyncHandler(async (req, res, next) => {
     where: search,
     take: pageSize,
     cursor: cursor ? { id: cursor } : undefined,
-    // orderBy:sortOption,
   });
   const nextCursor =
     challenges.length === pageSize
@@ -34,5 +28,13 @@ const getChallenges = asyncHandler(async (req, res, next) => {
   res.status(200).send({ challenges, nextCursor });
 });
 
-const challengeService = { getChallenges };
+const getChallenge = asyncHandler(async (req, res, next) => {
+  const challengeId = req.params.challengeId;
+  const challenge = await prisma.challenge.findFirstOrThrow({
+    where: { id: challengeId },
+  });
+  res.status(200).send(challenge);
+});
+
+const challengeService = { getChallenges, getChallenge };
 module.exports = { challengeService };

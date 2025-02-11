@@ -27,11 +27,17 @@ const signUp = asyncHandler(async (req, res, next) => {
   const { email, password, nickname } = req.body;
   const encryptedPassword = await bcrypt.hash(password, 12);
 
-  const existingUser = await prisma.user.findUnique({
+  let existingUser = await prisma.user.findUnique({
     where: { email },
     omit: { encryptedPassword: true },
   });
   if (existingUser) throw new Error("400/email already exist");
+
+  existingUser = await prisma.user.findUnique({
+    where: { nickname },
+    omit: { encryptedPassword: true },
+  });
+  if (existingUser) throw new Error("400/nickname already exist");
 
   const newUser = await prisma.user.create({
     data: { email, encryptedPassword, nickname },

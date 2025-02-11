@@ -5,5 +5,6 @@ const { validateGetChallenges } = require("../../validate/challenge.validate");
 const challengeRouter = express.Router();
 
 challengeRouter.get("/", validateGetChallenges, challengeService.getChallenges);
+challengeRouter.get("/:challengeId", challengeService.getChallenge);
 
 module.exports = challengeRouter;
