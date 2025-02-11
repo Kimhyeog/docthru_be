@@ -56,7 +56,7 @@ const createChallenge = asyncHandler(async (req, res, next) => {
         content,
       },
     });
-    await prisma.application.create({
+    await prisma.participate.create({
       data: { userId, challengeId: newChallenge.id },
     });
     return newChallenge;
@@ -64,13 +64,57 @@ const createChallenge = asyncHandler(async (req, res, next) => {
   res.status(200).send(result);
 });
 
-const participateChallenge = asyncHandler(async (req, res, next) => {
+const ParticipateChallenge = asyncHandler(async (req, res, next) => {
   //1.useId 찾기
-  //2.해당 챌린지 찾기
-  //3.해당 챌린지에 남은 인원이 있는지 확인 //
+  //2.해당 챌린지 찾기기
+  //3.해당 챌린지에 남은 인원이 있는지 확인하고 상태도 검사해야함 ACCEPTED 상태인지 //
   //4.남은 인원이 있으면 카운트 올리고 create participate
-  //5.끝
+  //5.검사도 해야함 만약에 이미 존재하면? x
+  const userId = req.userId;
+  const challengeId = req.params.challengeId;
+
+  const result = await prisma.$transaction(async (prisma) => {
+    const challenge = await prisma.challenge.findUniqueOrThrow({
+      where: { id: challengeId },
+      select: {
+        id: true,
+        participants: true,
+        maxParticipants: true,
+        application: { select: { userId: true, status: true } },
+      },
+    });
+    if (!challenge.application || challenge.application.status !== "ACCEPTED") {
+      throw new Error("400/The challenge is not open for participation.");
+    }
+    if (challenge.participants >= challenge.maxParticipants)
+      throw new Error("400/the challenge is fully booked");
+
+    if (challenge.application.userId === userId)
+      throw new Error("400/already applied");
+
+    const existingParticipation = await prisma.participate.findFirst({
+      where: { userId, challengeId },
+    });
+    if (existingParticipation) throw new Error("400/already applied");
+
+    await prisma.challenge.update({
+      where: { id: challengeId },
+      data: { participants: { increment: 1 } },
+    });
+
+    const participate = await prisma.participate.create({
+      data: { userId, challengeId },
+    });
+    return participate;
+  });
+
+  res.status(200).send(result);
 });
 
-const challengeService = { getChallenges, getChallenge, createChallenge };
+const challengeService = {
+  getChallenges,
+  getChallenge,
+  createChallenge,
+  ParticipateChallenge,
+};
 module.exports = { challengeService };

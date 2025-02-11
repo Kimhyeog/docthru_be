@@ -19,6 +19,9 @@ challengeRouter.post(
   challengeService.createChallenge
 );
 // 챌린지 참여하기
-challengeRouter.post("/:challengeId/participation");
+challengeRouter.post(
+  "/:challengeId/participation",
+  challengeService.ParticipateChallenge
+);
 
 module.exports = challengeRouter;
