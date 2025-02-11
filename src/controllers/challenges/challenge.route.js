@@ -3,6 +3,7 @@ const { challengeService } = require("../../services/challenge.service");
 const {
   validateGetChallenges,
   validateCreateChallenge,
+  validateupdateChallenge,
 } = require("../../validate/challenge.validate");
 const {
   authenticatedOnly,
@@ -28,8 +29,19 @@ challengeRouter.post(
   challengeService.participateChallenge
 );
 // 어드민 챌린지 수정
-challengeRouter.put("/:challengeId", authenticatedOnly, adminOnly);
+challengeRouter.put(
+  "/:challengeId",
+  validateupdateChallenge,
+  authenticatedOnly,
+  adminOnly,
+  challengeService.updateChallengeByAdmin
+);
 // 어드민 챌린지 삭제
-challengeRouter.delete("/:challengeId", authenticatedOnly, adminOnly);
+challengeRouter.delete(
+  "/:challengeId",
+  authenticatedOnly,
+  adminOnly,
+  challengeService.deleteChallengeByAdmin
+);
 
 module.exports = challengeRouter;

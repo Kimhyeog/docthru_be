@@ -24,9 +24,11 @@ const createChallengeSchema = z.object({
   docType: docTypeEnum,
   docUrl: z.string().url({ message: "docUrl does not invalid " }),
   deadLine: z.coerce.date(),
-  maxParticipants: z.number().int(),
+  maxParticipants: z.coerce.number().int().positive(),
   content: z.string(),
 });
+
+const updateChallengeSchema = createChallengeSchema.partial();
 
 function validateGetChallenges(req, res, next) {
   try {
@@ -57,7 +59,29 @@ function validateCreateChallenge(req, res, next) {
       docType: req.body.docType,
       docUrl: req.body.docUrl,
       deadLine: req.body.deadLine,
-      maxParticipants: Number(req.body.maxParticipants),
+      maxParticipants: req.body.maxParticipants,
+      content: req.body.content,
+    });
+
+    if (!parsedBody.success) {
+      throw new Error(`400/Validation error: ${parsedBody.error}`);
+    }
+    req.query = parsedBody.data;
+    next();
+  } catch (e) {
+    next(e);
+  }
+}
+
+function validateupdateChallenge(req, res, next) {
+  try {
+    const parsedBody = updateChallengeSchema.safeParse({
+      title: req.body.title,
+      field: req.body.field,
+      docType: req.body.docType,
+      docUrl: req.body.docUrl,
+      deadLine: req.body.deadLine,
+      maxParticipants: req.body.maxParticipants,
       content: req.body.content,
     });
 
@@ -74,4 +98,5 @@ function validateCreateChallenge(req, res, next) {
 module.exports = {
   validateGetChallenges,
   validateCreateChallenge,
+  validateupdateChallenge,
 };

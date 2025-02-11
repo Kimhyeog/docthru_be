@@ -26,14 +26,14 @@ model User {
 }
 
 model Challenge {
-  id              String        @id @default(uuid())
+  id              String       @id @default(uuid())
   title           String
   field           Field
   docType         DocType
   docUrl          String
   deadLine        DateTime
-  progress        Boolean       @default(false)
-  participants    Int           @default(1)
+  progress        Boolean      @default(false)
+  participants    Int          @default(1)
   maxParticipants Int
   content         String?
   application     Application?
@@ -44,20 +44,19 @@ model Challenge {
 model Application {
   id                  String            @id @default(uuid())
   user                User              @relation(fields: [userId], references: [id])
-  challenge           Challenge         @relation(fields: [challengeId], references: [id])
   userId              String
-  challengeId         String            @unique
+  challenge           Challenge?        @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+  challengeId         String?           @unique
   status              ApplicationStatus @default(WAITING)
   appliedAt           DateTime          @default(now())
   invalidationComment String?
-  invaildatedAt       DateTime?
-
+  invalidatedAt       DateTime?
 }
 
 model Participate {
   id          String    @id @default(uuid())
   user        User      @relation(fields: [userId], references: [id])
-  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  challenge   Challenge @relation(fields: [challengeId], references: [id],onDelete: Cascade)
   userId      String
   challengeId String
 
@@ -93,5 +92,5 @@ enum ApplicationStatus {
   WAITING
   ACCEPTED
   REJECTED
-  DELTED
+  DELETED
 }

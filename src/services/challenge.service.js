@@ -1,8 +1,8 @@
+const { ApplicationStatus } = require("@prisma/client");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
 const getChallenges = asyncHandler(async (req, res, next) => {
-  //application 에서 status가 ACCEPTED 추가해야함 신청 상태를 확인도 해야함 나중에 추가
   const { cursor, pageSize, keyword, orderBy, field, docType, progress } =
     req.query;
 
@@ -65,15 +65,11 @@ const createChallenge = asyncHandler(async (req, res, next) => {
 });
 
 const participateChallenge = asyncHandler(async (req, res, next) => {
-  //1.useId 찾기
-  //2.해당 챌린지 찾기기
-  //3.해당 챌린지에 남은 인원이 있는지 확인하고 상태도 검사해야함 ACCEPTED 상태인지 //
-  //4.남은 인원이 있으면 카운트 올리고 create participate
-  //5.검사도 해야함 만약에 이미 존재하면? x
   const userId = req.userId;
   const challengeId = req.params.challengeId;
 
   const result = await prisma.$transaction(async (prisma) => {
+    // 해당 챌린지에 남은 인원이 있는지 확인하고 상태도 검사해야함 ACCEPTED 상태인지 확인인
     const challenge = await prisma.challenge.findUniqueOrThrow({
       where: { id: challengeId },
       select: {
@@ -86,9 +82,10 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
     if (!challenge.application || challenge.application.status !== "ACCEPTED") {
       throw new Error("400/The challenge is not open for participation.");
     }
+    // 남은자리 체크
     if (challenge.participants >= challenge.maxParticipants)
       throw new Error("400/the challenge is fully booked");
-
+    // 이미 신청한건지 체크크
     if (challenge.application.userId === userId)
       throw new Error("400/already applied");
 
@@ -111,10 +108,41 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
   res.status(200).send(result);
 });
 
+const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
+  const challengeId = req.params.challengeId;
+  await prisma.challenge.findFirstOrThrow({ where: { id: challengeId } });
+  const updatedChallenge = await prisma.challenge.update({
+    where: { id: challengeId },
+    data: { ...req.body },
+  });
+  res.status(200).send(updatedChallenge);
+});
+
+//1. 삭제하고 해당 application의 상태를변경 transaction으로 ㄱㄱ
+const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
+  const challengeId = req.params.challengeId;
+  await prisma.$transaction(async (prisma) => {
+    await prisma.challenge.findFirstOrThrow({ where: { id: challengeId } });
+    await prisma.application.update({
+      where: { challengeId },
+      data: {
+        status: ApplicationStatus.DELETED,
+      },
+    });
+    await prisma.challenge.delete({
+      where: { id: challengeId },
+    });
+    res.sendStatus(204);
+  });
+});
+
 const challengeService = {
   getChallenges,
   getChallenge,
   createChallenge,
   participateChallenge,
+  updateChallengeByAdmin,
+  deleteChallengeByAdmin,
 };
+
 module.exports = { challengeService };
