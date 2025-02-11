@@ -19,8 +19,8 @@ model User {
   encryptedPassword String
   nickname          String        @unique
   createdAt         DateTime      @default(now())
-  grade             Grade
-  role              Role
+  grade             Grade?
+  role              Role?  // 임시로
   Application       Application[]
 }
 
@@ -66,6 +66,7 @@ enum Field {
   CAREER
   MODERNJS
   WEB
+  API
 }
 
 enum DocType {
