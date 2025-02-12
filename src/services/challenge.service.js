@@ -1,4 +1,3 @@
-const { date } = require("zod");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
@@ -15,6 +14,9 @@ const getChallenges = asyncHandler(async (req, res, next) => {
     progress: progress ? progress : undefined,
     application: {
       status: "ACCEPTED",
+    },
+    deadline: {
+      gte: new Date(),
     },
   };
 
