@@ -85,7 +85,7 @@ enum Field {
 
 enum DocType {
   BLOG
-  DOCS
+  OFFICIAL
 }
 
 enum ApplicationStatus {

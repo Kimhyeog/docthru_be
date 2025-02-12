@@ -1,7 +1,7 @@
 const { z } = require("zod");
 
 const fieldEnum = z.enum(["NEXTJS", "CAREER", "MODERNJS", "WEB", "API"]);
-const docTypeEnum = z.enum(["BLOG", "DOCS"]);
+const docTypeEnum = z.enum(["BLOG", "OFFICIAL"]);
 const progressEnum = z.enum(["PROGRESS", "COMPLETED"]);
 
 const searchSchema = z.object({

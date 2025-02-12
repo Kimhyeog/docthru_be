@@ -129,7 +129,6 @@ const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
 const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
   await prisma.$transaction(async (prisma) => {
-    console.log(challengeId);
     await prisma.challenge.findFirstOrThrow({
       where: { id: challengeId },
     });
@@ -140,7 +139,6 @@ const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
         status: "DELETED",
       },
     });
-    console.log(test);
     res.sendStatus(204);
   });
 });
