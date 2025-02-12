@@ -6,6 +6,7 @@ const {
 const applicationService = require("../../services/application.service");
 const {
   validateGetChallengesByAdmin,
+  validateUpdateChallengeByAdmin,
 } = require("../../validate/application.validate");
 
 const applicationRouter = express.Router();
@@ -25,6 +26,12 @@ applicationRouter.delete(
   applicationService.deleteNewChallenge
 );
 //어드민 신청한 신규 챌린지 승인 및 거절
-applicationRouter.put("/:applicationId");
+applicationRouter.put(
+  "/:challengeId",
+  validateUpdateChallengeByAdmin,
+  authenticatedOnly,
+  adminOnly,
+  applicationService.updateStatusChallengeByAdmin
+);
 
 module.exports = applicationRouter;

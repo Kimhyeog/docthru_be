@@ -74,11 +74,29 @@ const deleteNewChallenge = asyncHandler(async (req, res, next) => {
   res.sendStatus(204);
 });
 
-const updateNewChallengeByAdmin = asyncHandler(async (req, res, next) => {});
+const updateStatusChallengeByAdmin = asyncHandler(async (req, res, next) => {
+  const challengeId = req.params.challengeId;
+  const { status } = req.body;
+  const result = await prisma.$transaction(async (prisma) => {
+    const challenge = await prisma.challenge.findFirst({
+      where: { id: challengeId, application: { status: "WAITING" } },
+    });
+    if (!challenge)
+      throw new Error("400/not found challenge or already ACCEPTED");
+    const updatedApplication = await prisma.application.update({
+      where: { challengeId },
+      data: {
+        status,
+      },
+    });
+    return updatedApplication;
+  });
+  res.status(200).send(result);
+});
 
 const applicationService = {
   getChallengeByAdmin,
   deleteNewChallenge,
-  updateNewChallengeByAdmin,
+  updateStatusChallengeByAdmin,
 };
 module.exports = applicationService;
