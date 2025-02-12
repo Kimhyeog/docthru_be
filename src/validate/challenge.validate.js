@@ -18,7 +18,9 @@ const createChallengeSchema = z.object({
   field: fieldEnum,
   docType: docTypeEnum,
   docUrl: z.string().url({ message: "docUrl does not invalid " }),
-  deadline: z.coerce.date(),
+  deadline: z.coerce.date().refine((data) => data > new Date(), {
+    message: "The deadline must be in the future.",
+  }),
   maxParticipants: z.coerce.number().int().positive(),
   content: z.string(),
 });
