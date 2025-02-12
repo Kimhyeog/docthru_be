@@ -3,6 +3,7 @@ const authRouter = require("./auth/auth.route");
 const { authMiddleware } = require("../middlewares/auth.middleeware");
 const challengeRouter = require("./challenges/challenge.route");
 const applicationRouter = require("./applications/application.route");
+const usersRouter = require("./users/users.route");
 
 const router = express.Router();
 
@@ -10,5 +11,5 @@ router.use(authMiddleware);
 router.use("/auth", authRouter);
 router.use("/challenges", challengeRouter);
 router.use("/application", applicationRouter);
-
+router.use("/users", usersRouter);
 module.exports = router;

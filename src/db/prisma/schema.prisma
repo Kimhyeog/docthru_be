@@ -19,7 +19,7 @@ model User {
   encryptedPassword String
   nickname          String        @unique
   createdAt         DateTime      @default(now())
-  grade             Grade?
+  grade             Grade         @default(GENERAL)
   role              Role?         @default(GENERAL)
   application       Application[]
   participate       Participate[]
@@ -31,8 +31,8 @@ model Challenge {
   field           Field
   docType         DocType
   docUrl          String
-  deadline        DateTime     
-  progress        Progress      @default(PROGRESS)
+  deadline        DateTime
+  progress        Progress     @default(PROGRESS)
   participants    Int          @default(1)
   maxParticipants Int
   content         String?
@@ -95,7 +95,7 @@ enum ApplicationStatus {
   DELETED
 }
 
-enum Progress{
+enum Progress {
   PROGRESS
   COMPLETED
 }
