@@ -10,7 +10,7 @@ const searchSchema = z.object({
   keyword: z.string().optional(),
   field: fieldEnum.optional(),
   docType: docTypeEnum.optional(),
-  progress: z.progressEnum.optional(),
+  progress: progressEnum.optional(),
 });
 
 const createChallengeSchema = z.object({
