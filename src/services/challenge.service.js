@@ -2,8 +2,7 @@ const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
 const getChallenges = asyncHandler(async (req, res, next) => {
-  const { cursor, pageSize, keyword, orderBy, field, docType, progress } =
-    req.query;
+  const { cursor, pageSize, keyword, field, docType, progress } = req.query;
 
   const search = {
     OR: keyword
@@ -15,9 +14,9 @@ const getChallenges = asyncHandler(async (req, res, next) => {
     application: {
       status: "ACCEPTED",
     },
-    deadline: {
-      gte: new Date(),
-    },
+    // deadline: {
+    //   gte: new Date(),
+    // },
   };
 
   const challenges = await prisma.challenge.findMany({
