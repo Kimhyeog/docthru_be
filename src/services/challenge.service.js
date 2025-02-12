@@ -1,4 +1,3 @@
-const { ApplicationStatus } = require("@prisma/client");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
@@ -56,7 +55,7 @@ const createChallenge = asyncHandler(async (req, res, next) => {
         content,
       },
     });
-    await prisma.participate.create({
+    await prisma.application.create({
       data: { userId, challengeId: newChallenge.id },
     });
     return newChallenge;
@@ -119,20 +118,21 @@ const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
   res.status(200).send(updatedChallenge);
 });
 
-//1. 삭제하고 해당 application의 상태를변경 transaction으로 ㄱㄱ
 const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
   await prisma.$transaction(async (prisma) => {
-    await prisma.challenge.findFirstOrThrow({ where: { id: challengeId } });
-    await prisma.application.update({
-      where: { challengeId },
-      data: {
-        status: ApplicationStatus.DELETED,
-      },
-    });
-    await prisma.challenge.delete({
+    console.log(challengeId);
+    await prisma.challenge.findFirstOrThrow({
       where: { id: challengeId },
     });
+
+    const test = await prisma.application.update({
+      where: { challengeId },
+      data: {
+        status: "DELETED",
+      },
+    });
+    console.log(test);
     res.sendStatus(204);
   });
 });

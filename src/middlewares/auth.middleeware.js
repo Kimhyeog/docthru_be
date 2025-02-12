@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const prisma = require("../db/prisma/client");
-const { Role } = require("@prisma/client");
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
 
 function authMiddleware(req, res, next) {
@@ -36,7 +35,7 @@ async function adminOnly(req, res, next) {
   try {
     const userId = req.userId;
     const user = await prisma.user.findFirstOrThrow({ where: { id: userId } });
-    if (user.role === Role.ADMIN) {
+    if (user.role === "ADMIN") {
       next();
     } else {
       throw new Error("401/Unauthenticated : admin only");
