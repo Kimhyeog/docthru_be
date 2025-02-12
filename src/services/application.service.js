@@ -51,7 +51,28 @@ const getChallengeByAdmin = asyncHandler(async (req, res, next) => {
 });
 
 //승인되기 전꺼만? 삭제?
-const deleteNewChallenge = asyncHandler(async (req, res, next) => {});
+//1 유저 본인이 쓴건지 확인해야함
+const deleteNewChallenge = asyncHandler(async (req, res, next) => {
+  await prisma.$transaction(async (prisma) => {
+    const userId = req.userId;
+    const challengeId = req.params.challengeId;
+    //1. 아이디가 있있고 WAITING 상태인지 확인, 유저 아이디가 일치하는지도 확인
+    const challenge = await prisma.challenge.findFirst({
+      where: {
+        id: challengeId,
+        application: { userId, status: "WAITING" },
+      },
+    });
+    if (!challenge)
+      throw new Error("400/challenge cannot be find or unathorization");
+    //2.삭제 진행
+    await prisma.application.delete({
+      where: { challengeId },
+    });
+    await prisma.challenge.delete({ where: { id: challengeId } });
+  });
+  res.sendStatus(204);
+});
 
 const updateNewChallengeByAdmin = asyncHandler(async (req, res, next) => {});
 

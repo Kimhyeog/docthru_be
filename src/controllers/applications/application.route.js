@@ -18,8 +18,12 @@ applicationRouter.get(
   adminOnly,
   applicationService.getChallengeByAdmin
 );
-//신규 챌린지 신청 취소 어드민 말고 유저가 직접
-applicationRouter.delete("/:applicationId");
+//신규 챌린지 신청 취소 어드민 말고 유저가 직접 WAITING 상태일때만 취소할수 있게 설정해야함
+applicationRouter.delete(
+  "/:challengeId",
+  authenticatedOnly,
+  applicationService.deleteNewChallenge
+);
 //어드민 신청한 신규 챌린지 승인 및 거절
 applicationRouter.put("/:applicationId");
 
