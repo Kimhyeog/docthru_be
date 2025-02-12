@@ -2,24 +2,45 @@ const { application } = require("express");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
-//option은 status 로 받고 나머지는 orderBy로 여기는 내일 이어서 해보기힘드네
+//option은 status 로 받고 나머지는 orderBy로
+//마감기한 -> deadline 챌린지 , 신청기한은 challenge의 application의 appliedAt
 const getChallengeByAdmin = asyncHandler(async (req, res, next) => {
-  const { cursor, pageSize, keyword, orderBy, option } = req.query;
+  const { cursor, pageSize, keyword, option } = req.query;
 
   const search = {
     OR: keyword
       ? [{ title: { contains: keyword, mode: "insensitive" } }]
       : undefined,
-    application: {
-      status: option,
-    },
+    ...(["WAITING", "REJECTED", "ACCEPTED"].includes(option) && {
+      application: {
+        status: option,
+      },
+    }),
   };
+  let orderBy = {};
+  switch (option) {
+    case "DeadlineDesc":
+      orderBy = { deadline: "desc" };
+      break;
+    case "DeadlineAsc":
+      orderBy = { deadline: "asc" };
+      break;
+    case "ApplyDeadlineDesc":
+      orderBy = { application: { appliedAt: "desc" } };
+      break;
+    case "ApplyDeadlineAsc":
+      orderBy = { application: { appliedAt: "asc" } };
+      break;
+    default:
+      orderBy = {};
+  }
 
   const challenges = await prisma.challenge.findMany({
     where: search,
     take: pageSize,
     cursor: cursor ? { id: cursor } : undefined,
-    include: { application: { select: { status: true } } },
+    include: { application: { select: { status: true, appliedAt: true } } },
+    orderBy,
   });
   const nextCursor =
     challenges.length === pageSize

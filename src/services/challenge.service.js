@@ -1,3 +1,4 @@
+const { date } = require("zod");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
@@ -41,7 +42,7 @@ const getChallenge = asyncHandler(async (req, res, next) => {
 const createChallenge = asyncHandler(async (req, res, next) => {
   // validation 추가하기
   const userId = req.userId;
-  const { title, field, docType, docUrl, deadLine, maxParticipants, content } =
+  const { title, field, docType, docUrl, deadline, maxParticipants, content } =
     req.body;
   const result = await prisma.$transaction(async (prisma) => {
     const newChallenge = await prisma.challenge.create({
@@ -50,7 +51,7 @@ const createChallenge = asyncHandler(async (req, res, next) => {
         field,
         docType,
         docUrl,
-        deadLine,
+        deadline,
         maxParticipants,
         content,
       },
@@ -76,15 +77,21 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
         participants: true,
         maxParticipants: true,
         application: { select: { userId: true, status: true } },
+        deadline: true,
       },
     });
+
     if (!challenge.application || challenge.application.status !== "ACCEPTED") {
       throw new Error("400/The challenge is not open for participation.");
     }
     // 남은자리 체크
     if (challenge.participants >= challenge.maxParticipants)
       throw new Error("400/the challenge is fully booked");
-    // 이미 신청한건지 체크크
+    // 데드라인이 유효한지 체크
+
+    if (challenge.deadline < new Date())
+      throw new Error("400/the deadline has already passed.");
+    // 이미 신청한건지 체크
     if (challenge.application.userId === userId)
       throw new Error("400/already applied");
 

@@ -4,12 +4,16 @@ const {
   adminOnly,
 } = require("../../middlewares/auth.middleeware");
 const applicationService = require("../../services/application.service");
+const {
+  validateGetChallengesByAdmin,
+} = require("../../validate/application.validate");
 
 const applicationRouter = express.Router();
 
 //어드민 신청한 신규 챌린지 목록 조회
 applicationRouter.get(
   "/",
+  validateGetChallengesByAdmin,
   authenticatedOnly,
   adminOnly,
   applicationService.getChallengeByAdmin

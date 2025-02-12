@@ -23,7 +23,7 @@ const createChallengeSchema = z.object({
   field: fieldEnum,
   docType: docTypeEnum,
   docUrl: z.string().url({ message: "docUrl does not invalid " }),
-  deadLine: z.coerce.date(),
+  deadline: z.coerce.date(),
   maxParticipants: z.coerce.number().int().positive(),
   content: z.string(),
 });
@@ -58,7 +58,7 @@ function validateCreateChallenge(req, res, next) {
       field: req.body.field,
       docType: req.body.docType,
       docUrl: req.body.docUrl,
-      deadLine: req.body.deadLine,
+      deadline: req.body.deadline,
       maxParticipants: req.body.maxParticipants,
       content: req.body.content,
     });
@@ -80,7 +80,7 @@ function validateupdateChallenge(req, res, next) {
       field: req.body.field,
       docType: req.body.docType,
       docUrl: req.body.docUrl,
-      deadLine: req.body.deadLine,
+      deadline: req.body.deadline,
       maxParticipants: req.body.maxParticipants,
       content: req.body.content,
     });
