@@ -32,7 +32,7 @@ model Challenge {
   docType         DocType
   docUrl          String
   deadline        DateTime     
-  progress        Boolean      @default(false)
+  progress        Progress      @default(PROGRESS)
   participants    Int          @default(1)
   maxParticipants Int
   content         String?
@@ -93,4 +93,9 @@ enum ApplicationStatus {
   ACCEPTED
   REJECTED
   DELETED
+}
+
+enum Progress{
+  PROGRESS
+  COMPLETED
 }

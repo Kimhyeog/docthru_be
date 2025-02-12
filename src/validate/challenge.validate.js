@@ -2,6 +2,7 @@ const { z } = require("zod");
 
 const fieldEnum = z.enum(["NEXTJS", "CAREER", "MODERNJS", "WEB", "API"]);
 const docTypeEnum = z.enum(["BLOG", "DOCS"]);
+const progressEnum = z.enum(["PROGRESS", "COMPLETED"]);
 
 const searchSchema = z.object({
   cursor: z.string().optional(),
@@ -9,13 +10,7 @@ const searchSchema = z.object({
   keyword: z.string().optional(),
   field: fieldEnum.optional(),
   docType: docTypeEnum.optional(),
-  progress: z
-    .string()
-    .refine((val) => val === "true" || val === "false", {
-      message: "progress must be 'true' or 'flale' ",
-    })
-    .transform((val) => val === "true")
-    .optional(),
+  progress: z.progressEnum.optional(),
 });
 
 const createChallengeSchema = z.object({
