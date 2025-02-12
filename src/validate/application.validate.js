@@ -19,6 +19,7 @@ const searchSchema = z.object({
 
 const updateApplicationShema = z.object({
   status: z.enum(["REJECTED", "ACCEPTED"]),
+  invalidationComment: z.string().optional(),
 });
 
 function validateGetChallengesByAdmin(req, res, next) {
@@ -44,6 +45,7 @@ function validateUpdateChallengeByAdmin(req, res, next) {
   try {
     const parsedBody = updateApplicationShema.safeParse({
       status: req.body.status,
+      invalidationComment: req.body.invalidationComment,
     });
     if (!parsedBody.success)
       throw new Error(`400/Validation error: ${parsedBody.error}`);

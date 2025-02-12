@@ -75,20 +75,35 @@ const deleteNewChallenge = asyncHandler(async (req, res, next) => {
 });
 
 const updateStatusChallengeByAdmin = asyncHandler(async (req, res, next) => {
+  //거절하면 거절 사유랑 거절 시간 업데이트 하기
   const challengeId = req.params.challengeId;
-  const { status } = req.body;
+  const { status, invalidationComment } = req.body;
   const result = await prisma.$transaction(async (prisma) => {
     const challenge = await prisma.challenge.findFirst({
       where: { id: challengeId, application: { status: "WAITING" } },
     });
     if (!challenge)
       throw new Error("400/not found challenge or already ACCEPTED");
-    const updatedApplication = await prisma.application.update({
+    let updatedApplication = await prisma.application.update({
       where: { challengeId },
       data: {
         status,
       },
     });
+    const challengeOwnerId = updatedApplication.userId;
+    if (status === "ACCEPTED") {
+      await prisma.participate.create({
+        data: { userId: challengeOwnerId, challengeId },
+      });
+    } else if (status === "REJECTED") {
+      updatedApplication = await prisma.application.update({
+        where: { challengeId },
+        data: {
+          invalidatedAt: new Date(),
+          invalidationComment,
+        },
+      });
+    }
     return updatedApplication;
   });
   res.status(200).send(result);
