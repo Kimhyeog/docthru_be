@@ -1,3 +1,5 @@
+const { Prisma } = require("@prisma/client");
+
 function errorHandler(err, req, res, next) {
   console.error("error는 ", err);
 
@@ -7,7 +9,7 @@ function errorHandler(err, req, res, next) {
   if (isNaN(statusCode)) return res.status(500).send("unknown error");
 
   res.status(statusCode).send(message);
-  res.status(500).send({ message: e.message });
+  res.status(500).send({ message: err.message });
 }
 
 function asyncHandler(handler) {
