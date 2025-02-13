@@ -40,7 +40,6 @@ model Challenge {
   maxParticipants Int
   content         String?
   application     Application?
-
   participate Participate[]
   work        Work[]
 }
