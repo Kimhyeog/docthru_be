@@ -23,6 +23,8 @@ model User {
   role              Role?         @default(GENERAL)
   application       Application[]
   participate       Participate[]
+  work              Work[]
+  like              Like[]
 }
 
 model Challenge {
@@ -39,6 +41,7 @@ model Challenge {
   application     Application?
 
   participate Participate[]
+  work        Work[]
 }
 
 model Application {
@@ -61,6 +64,31 @@ model Participate {
   challengeId String
 
   @@unique([userId, challengeId])
+}
+
+model Work {
+  id             String    @id @default(uuid())
+  user           User      @relation(fields: [userId], references: [id])
+  challenge      Challenge @relation(fields: [challengeId], references: [id])
+  description    String
+  lastModifiedAt DateTime  @default(now())
+  submittedAt    DateTime  @default(now())
+  isSubmitted    Boolean   @default(false)
+  userId         String
+  challengeId    String
+  like           Like[]
+
+  @@unique([userId,challengeId])
+}
+
+model Like {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  work   Work   @relation(fields: [workId], references: [id])
+  userId String
+  workId String
+
+  @@unique([userId, workId])
 }
 
 //바뀔예정 
