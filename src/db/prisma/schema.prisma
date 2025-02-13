@@ -82,8 +82,8 @@ model Work {
 
 model Like {
   id     String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id])
-  work   Work   @relation(fields: [workId], references: [id])
+  user   User   @relation(fields: [userId], references: [id],onDelete: Cascade)
+  work   Work   @relation(fields: [workId], references: [id],onDelete: Cascade)
   userId String
   workId String
 

@@ -100,5 +100,47 @@ const deleteWork = asyncHandler(async (req, res, next) => {
   res.sendStatus(204);
 });
 
-const workService = { getWorks, getWork, createWork, updateWork, deleteWork };
+const workLike = asyncHandler(async (req, res, next) => {
+  const userId = req.userId;
+  const workId = req.params.workId;
+  const result = await prisma.$transaction(async (prisma) => {
+    const existingLike = await prisma.like.findUnique({
+      where: { userId_workId: { userId, workId } },
+    });
+    if (existingLike) throw new Error("400/already like");
+    const like = await prisma.like.create({ data: { userId, workId } });
+    await prisma.work.update({
+      where: { id: workId },
+      data: { likeCount: { increment: 1 } },
+    });
+    return like;
+  });
+  res.status(200).send(result);
+});
+const workDislike = asyncHandler(async (req, res, next) => {
+  const userId = req.userId;
+  const workId = req.params.workId;
+  await prisma.$transaction(async (prisma) => {
+    const like = await prisma.like.findUnique({
+      where: { userId_workId: { userId, workId } },
+    });
+    if (!like) throw new Error("400/already dislike");
+    await prisma.like.delete({ where: { userId_workId: { userId, workId } } });
+    await prisma.work.update({
+      where: { id: workId },
+      data: { likeCount: { decrement: 1 } },
+    });
+  });
+  res.sendStatus(204);
+});
+
+const workService = {
+  getWorks,
+  getWork,
+  createWork,
+  updateWork,
+  deleteWork,
+  workLike,
+  workDislike,
+};
 module.exports = workService;
