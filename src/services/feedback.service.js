@@ -12,9 +12,16 @@ const getFeedbacks = asyncHandler(async (req, res, next) => {
   res.status(200).send(feedbacks);
 });
 
+// challenge의 상태 보고 됬다 안됬다 하게
 const createFeedback = asyncHandler(async (req, res, next) => {
   const userId = req.userId;
   const workId = req.params.workId;
+  const challenge = await prisma.challenge.findFirstOrThrow({
+    where: { work: { some: { id: workId } } },
+    select: { progress: true },
+  });
+  if (challenge.progress === "COMPLETED")
+    throw new Error("400/challenge not found or challenge already completed");
   const { content } = req.body;
   const feedback = await prisma.feedback.create({
     data: { userId, workId, content },
@@ -26,10 +33,18 @@ const updateFeedback = asyncHandler(async (req, res, next) => {
   const userId = req.userId;
   const feedbackId = req.params.feedbackId;
   const { content } = req.body;
+
   let feedback = await prisma.feedback.findFirst({
     where: { id: feedbackId },
   });
+  const challenge = await prisma.challenge.findFirstOrThrow({
+    where: { work: { some: { id: feedback.workId } } },
+    select: { progress: true },
+  });
   if (!feedback) throw new Error("404/feedback can't found");
+  if (challenge.progress === "COMPLETED")
+    throw new Error("400/challenge not found or challenge already completed");
+
   if (feedback.userId !== userId) throw new Error("401/unathorization");
   feedback = await prisma.feedback.update({
     where: { id: feedbackId },
@@ -48,6 +63,13 @@ const deleteFeedback = asyncHandler(async (req, res, next) => {
     where: { id: feedbackId },
   });
   if (!feedback) throw new Error("404/feedback can't found");
+
+  const challenge = await prisma.challenge.findFirstOrThrow({
+    where: { work: { some: { id: feedback.workId } } },
+    select: { progress: true },
+  });
+  if (challenge.progress === "COMPLETED")
+    throw new Error("400/challenge not found or challenge already completed");
   if (feedback.userId !== userId) throw new Error("401/unathorization");
   feedback = await prisma.feedback.delete({
     where: { id: feedbackId },

@@ -72,7 +72,7 @@ model Work {
   challenge      Challenge  @relation(fields: [challengeId], references: [id])
   description    String
   lastModifiedAt DateTime   @default(now())
-  submittedAt    DateTime   @default(now())
+  submittedAt    DateTime?   
   isSubmitted    Boolean    @default(false)
   userId         String
   challengeId    String

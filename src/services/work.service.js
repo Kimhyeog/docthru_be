@@ -41,6 +41,14 @@ const createWork = asyncHandler(async (req, res, next) => {
     where: { userId, challengeId, isSubmitted: true },
   });
   if (existingWork) throw new Error("400/you already create work");
+  //마감시간 확인
+  const challengeProgess = await prisma.challenge.findFirst({
+    where: { id: challengeId },
+    select: { progress: true },
+  });
+  if (!challengeProgess || challengeProgess.progress === "COMPLETED")
+    throw new Error("400/challenge not found or challenge already completed");
+
   //조건이 만족 되면 만드는데 바디에서 번역문을 받아야함
   const work = await prisma.work.create({
     data: {
@@ -65,7 +73,13 @@ const updateWork = asyncHandler(async (req, res, next) => {
   let work = await prisma.work.findUnique({ where: { id: workId } });
   if (!work) throw new Error("404/work not found");
   if (work.userId !== userId) throw new Error("401/unathorization");
-
+  // 진행상태 확인해보기
+  const challenge = await prisma.challenge.findFirst({
+    where: { id: work.challengeId },
+    select: { progress: true },
+  });
+  if (!challenge || challenge.progress === "COMPLETED")
+    throw new Error("400/challenge not found or challenge already completed");
   //조건이 만족 되면 만드는데 바디에서 번역문을 받아야함
   work = await prisma.work.update({
     where: { id: workId },
@@ -85,6 +99,14 @@ const deleteWork = asyncHandler(async (req, res, next) => {
     const work = await prisma.work.findFirst({
       where: { challengeId, userId, isSubmitted: true },
     });
+    if (!work) throw new Error("404/work not found");
+    // 진행상태 확인해보기
+    const challenge = await prisma.challenge.findFirst({
+      where: { id: work.challengeId },
+      select: { progress: true },
+    });
+    if (!challenge || challenge.progress === "COMPLETED")
+      throw new Error("400/challenge not found or challenge already completed");
     await prisma.participate.delete({
       where: { userId_challengeId: { userId, challengeId } },
     });
