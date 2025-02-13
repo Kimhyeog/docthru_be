@@ -76,9 +76,8 @@ model Work {
   isSubmitted    Boolean   @default(false)
   userId         String
   challengeId    String
+  likeCount      Int       @default(0)
   like           Like[]
-
-  @@unique([userId,challengeId])
 }
 
 model Like {
