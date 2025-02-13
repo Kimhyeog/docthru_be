@@ -25,6 +25,7 @@ model User {
   participate       Participate[]
   work              Work[]
   like              Like[]
+  Feedback          Feedback[]
 }
 
 model Challenge {
@@ -67,27 +68,38 @@ model Participate {
 }
 
 model Work {
-  id             String    @id @default(uuid())
-  user           User      @relation(fields: [userId], references: [id])
-  challenge      Challenge @relation(fields: [challengeId], references: [id])
+  id             String     @id @default(uuid())
+  user           User       @relation(fields: [userId], references: [id])
+  challenge      Challenge  @relation(fields: [challengeId], references: [id])
   description    String
-  lastModifiedAt DateTime  @default(now())
-  submittedAt    DateTime  @default(now())
-  isSubmitted    Boolean   @default(false)
+  lastModifiedAt DateTime   @default(now())
+  submittedAt    DateTime   @default(now())
+  isSubmitted    Boolean    @default(false)
   userId         String
   challengeId    String
-  likeCount      Int       @default(0)
+  likeCount      Int        @default(0)
   like           Like[]
+  Feedback       Feedback[]
 }
 
 model Like {
   id     String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id],onDelete: Cascade)
-  work   Work   @relation(fields: [workId], references: [id],onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work   Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
   userId String
   workId String
 
   @@unique([userId, workId])
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  work      Work     @relation(fields: [workId], references: [id] ,onDelete:Cascade )
+  content   String
+  createdAt DateTime @default(now())
+  userId    String
+  workId    String
 }
 
 //바뀔예정 

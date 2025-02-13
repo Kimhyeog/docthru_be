@@ -2,6 +2,11 @@ const express = require("express");
 const workService = require("../../services/work.service");
 const { validateCreateWork } = require("../../validate/work.validate");
 const { authenticatedOnly } = require("../../middlewares/auth.middleeware");
+const feedbackService = require("../../services/feedback.service");
+const {
+  validateGetFeedback,
+  validateFeedback,
+} = require("../../validate/feedback.validate");
 
 const workRouter = express.Router();
 
@@ -32,4 +37,20 @@ workRouter.delete("/:challengeId", authenticatedOnly, workService.deleteWork);
 workRouter.post("/:workId/like", authenticatedOnly, workService.workLike);
 // 작업물 좋아요 해제
 workRouter.delete("/:workId/like", authenticatedOnly, workService.workDislike);
+
+//피드백 조회
+workRouter.get(
+  "/:workId/feedback",
+  validateGetFeedback,
+  feedbackService.getFeedbacks
+);
+
+//피드백 작성
+workRouter.post(
+  "/:workId/feedback",
+  validateFeedback,
+  authenticatedOnly,
+  feedbackService.createFeedback
+);
+
 module.exports = workRouter;
