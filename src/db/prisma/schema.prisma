@@ -14,10 +14,88 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(uuid())
-  name  String
-  email String @unique
-  //비밀번호(암호화)
-  // 유저 등급 - 전문가,일반
-  //
+  id                String        @id @default(uuid())
+  email             String        @unique
+  encryptedPassword String
+  nickname          String        @unique
+  createdAt         DateTime      @default(now())
+  grade             Grade         @default(GENERAL)
+  role              Role?         @default(GENERAL)
+  application       Application[]
+  participate       Participate[]
+}
+
+model Challenge {
+  id              String       @id @default(uuid())
+  title           String
+  field           Field
+  docType         DocType
+  docUrl          String
+  deadline        DateTime
+  progress        Progress     @default(PROGRESS)
+  participants    Int          @default(1)
+  maxParticipants Int
+  content         String?
+  application     Application?
+
+  participate Participate[]
+}
+
+model Application {
+  id                  String            @id @default(uuid())
+  user                User              @relation(fields: [userId], references: [id])
+  userId              String
+  challenge           Challenge         @relation(fields: [challengeId], references: [id])
+  challengeId         String            @unique
+  status              ApplicationStatus @default(WAITING)
+  appliedAt           DateTime          @default(now())
+  invalidationComment String?
+  invalidatedAt       DateTime?
+}
+
+model Participate {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  userId      String
+  challengeId String
+
+  @@unique([userId, challengeId])
+}
+
+//바뀔예정 
+enum Role {
+  GENERAL
+  EXPERT
+  ADMIN
+}
+
+enum Grade {
+  GENERAL
+  EXPERT
+}
+
+enum Field {
+  NEXTJS
+  CAREER
+  MODERNJS
+  WEB
+  API
+}
+
+enum DocType {
+  BLOG
+  OFFICIAL
+}
+
+enum ApplicationStatus {
+  WAITING
+  ACCEPTED
+  REJECTED
+  DELETED
+}
+
+enum Progress {
+  PROGRESS
+  COMPLETED
 }

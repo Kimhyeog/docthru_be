@@ -1,0 +1,144 @@
+paths:
+  /auth/signup:
+    post:
+      summary: 회원가입 API
+      description: 이메일, 닉네임, 비밀번호를 입력하여 회원가입을 진행합니다.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - nickname
+                - password
+                - passwordConfirmation
+              properties:
+                email:
+                  type: string
+                  example: "test@example.com"
+                nickname:
+                  type: string
+                  example: "Eomseong"
+                password:
+                  type: string
+                  example: "qwer1234"
+                passwordConfirmation:
+                  type: string
+                  example: "qwer1234"
+      responses:
+        201:
+          description: 회원가입 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  email:
+                    type: string
+                    example: "test@example.com"
+                  nickname:
+                    type: string
+                    example: "Eomsung"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-02-10T12:34:56.789Z"
+        400:
+          description: 입력값 오류 (잘못된 이메일 형식, 중복된 이메일 등)
+
+  /auth/login:
+    post:
+      summary: 로그인 API
+      description: 이메일과 비밀번호를 입력하여 로그인합니다.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: "test@example.com"
+                password:
+                  type: string
+                  example: "qwer1234"
+      responses:
+        200:
+          description: 로그인 성공 (토큰 반환)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIs..."
+                  refreshToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIs..."
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "00733f16-43b4-4dd8-9428-9866f15f9848"
+                      email:
+                        type: string
+                        example: "test@12345.com"
+                      nickname:
+                        type: string
+                        example: "테스트"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-02-10T05:11:34.377Z"
+        401:
+          description: 로그인 실패 (잘못된 자격 증명, 이메일이 존재 하지 않음, 비밀번호가 틀림)
+
+  /auth/refreshToken:
+    post:
+      summary: refreshToken API
+      description: refreshToken으로 accessToken 재발급하는 API입니다다.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIs..."
+      responses:
+        200:
+          description: 성공 (토큰 반환)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIs..."
+                  refreshToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIs..."
+        400:
+          description: 실패 (유효하지 않은 refreshToken 일 가능성이 있음, 등등 )
