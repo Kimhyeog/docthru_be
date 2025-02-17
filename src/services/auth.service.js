@@ -53,12 +53,12 @@ const logIn = asyncHandler(async (req, res, next) => {
       where: { email },
       select: { encryptedPassword: true },
     });
-    if (!existingUser) throw new Error("401/user does not exist");
+    if (!existingUser) throw new Error("401/존재하지 않는 이메일 입니다.");
     const passwordCheck = await bcrypt.compare(
       password,
       existingUser.encryptedPassword
     );
-    if (!passwordCheck) throw new Error("401/Incorrect password");
+    if (!passwordCheck) throw new Error("401/비밀번호가 일치하지 않습니다.");
 
     const user = await prisma.user.findUniqueOrThrow({
       where: { email },
