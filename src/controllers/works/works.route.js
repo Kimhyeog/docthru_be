@@ -21,6 +21,8 @@ workRouter.post(
   authenticatedOnly,
   workService.createWork
 );
+// 작업물 삭제
+workRouter.delete("/:challengeId", authenticatedOnly, workService.deleteWork);
 
 // 작업물 수정
 workRouter.put(
@@ -29,9 +31,6 @@ workRouter.put(
   authenticatedOnly,
   workService.updateWork
 );
-
-// 작업물 삭제
-workRouter.delete("/:challengeId", authenticatedOnly, workService.deleteWork);
 
 // 작업물 좋아요
 workRouter.post("/:workId/like", authenticatedOnly, workService.workLike);

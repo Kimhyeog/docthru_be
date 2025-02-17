@@ -38,7 +38,7 @@ async function adminOnly(req, res, next) {
     if (user.role === "ADMIN") {
       next();
     } else {
-      throw new Error("401/Unauthenticated : admin only");
+      throw new Error("403/Unauthenticated : admin only");
     }
   } catch (e) {
     next(e);

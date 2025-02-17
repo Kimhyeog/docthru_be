@@ -31,13 +31,13 @@ const signUp = asyncHandler(async (req, res, next) => {
     where: { email },
     omit: { encryptedPassword: true },
   });
-  if (existingUser) throw new Error("400/email already exist");
+  if (existingUser) throw new Error("400/사용중인 이메일입니다.");
 
   existingUser = await prisma.user.findUnique({
     where: { nickname },
     omit: { encryptedPassword: true },
   });
-  if (existingUser) throw new Error("400/nickname already exist");
+  if (existingUser) throw new Error("400/사용중인 닉네임입니다.");
 
   const newUser = await prisma.user.create({
     data: { email, encryptedPassword, nickname },
