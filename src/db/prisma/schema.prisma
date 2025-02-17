@@ -104,7 +104,6 @@ model Feedback {
 //바뀔예정 
 enum Role {
   GENERAL
-  EXPERT
   ADMIN
 }
 
