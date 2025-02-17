@@ -7,7 +7,7 @@ const getUserMe = asyncHandler(async (req, res, next) => {
     where: {
       id: userId,
     },
-    select: { nickname: true, grade: true },
+    select: { nickname: true, grade: true, role: true },
   });
   if (!user) throw new Error("400/user not found");
   res.status(200).send(user);
