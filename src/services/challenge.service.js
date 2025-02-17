@@ -62,7 +62,7 @@ const createChallenge = asyncHandler(async (req, res, next) => {
     });
     return newChallenge;
   });
-  res.status(200).send(result);
+  res.status(201).send(result);
 });
 
 const participateChallenge = asyncHandler(async (req, res, next) => {

@@ -60,7 +60,7 @@ const createWork = asyncHandler(async (req, res, next) => {
       isSubmitted: true,
     },
   });
-  res.status(200).send(work);
+  res.status(201).send(work);
 });
 
 // 수정 및 삭제에서 완료된 챌린지인지 확인하는 것도 필요함
