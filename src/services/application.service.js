@@ -1,4 +1,3 @@
-const { application } = require("express");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 

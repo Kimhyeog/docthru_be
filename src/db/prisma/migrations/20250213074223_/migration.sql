@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Work" ALTER COLUMN "submittedAt" DROP NOT NULL,
+ALTER COLUMN "submittedAt" DROP DEFAULT;

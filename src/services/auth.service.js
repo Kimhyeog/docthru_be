@@ -31,13 +31,13 @@ const signUp = asyncHandler(async (req, res, next) => {
     where: { email },
     omit: { encryptedPassword: true },
   });
-  if (existingUser) throw new Error("400/email already exist");
+  if (existingUser) throw new Error("400/사용중인 이메일입니다.");
 
   existingUser = await prisma.user.findUnique({
     where: { nickname },
     omit: { encryptedPassword: true },
   });
-  if (existingUser) throw new Error("400/nickname already exist");
+  if (existingUser) throw new Error("400/사용중인 닉네임입니다.");
 
   const newUser = await prisma.user.create({
     data: { email, encryptedPassword, nickname },
@@ -53,12 +53,12 @@ const logIn = asyncHandler(async (req, res, next) => {
       where: { email },
       select: { encryptedPassword: true },
     });
-    if (!existingUser) throw new Error("401/user does not exist");
+    if (!existingUser) throw new Error("401/존재하지 않는 이메일 입니다.");
     const passwordCheck = await bcrypt.compare(
       password,
       existingUser.encryptedPassword
     );
-    if (!passwordCheck) throw new Error("401/Incorrect password");
+    if (!passwordCheck) throw new Error("401/비밀번호가 일치하지 않습니다.");
 
     const user = await prisma.user.findUniqueOrThrow({
       where: { email },

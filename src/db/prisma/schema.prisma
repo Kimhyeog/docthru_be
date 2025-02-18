@@ -23,6 +23,9 @@ model User {
   role              Role?         @default(GENERAL)
   application       Application[]
   participate       Participate[]
+  work              Work[]
+  like              Like[]
+  Feedback          Feedback[]
 }
 
 model Challenge {
@@ -37,8 +40,8 @@ model Challenge {
   maxParticipants Int
   content         String?
   application     Application?
-
   participate Participate[]
+  work        Work[]
 }
 
 model Application {
@@ -63,10 +66,44 @@ model Participate {
   @@unique([userId, challengeId])
 }
 
+model Work {
+  id             String     @id @default(uuid())
+  user           User       @relation(fields: [userId], references: [id])
+  challenge      Challenge  @relation(fields: [challengeId], references: [id])
+  description    String
+  lastModifiedAt DateTime   @default(now())
+  submittedAt    DateTime?   
+  isSubmitted    Boolean    @default(false)
+  userId         String
+  challengeId    String
+  likeCount      Int        @default(0)
+  like           Like[]
+  Feedback       Feedback[]
+}
+
+model Like {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work   Work   @relation(fields: [workId], references: [id], onDelete: Cascade)
+  userId String
+  workId String
+
+  @@unique([userId, workId])
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  work      Work     @relation(fields: [workId], references: [id] ,onDelete:Cascade )
+  content   String
+  createdAt DateTime @default(now())
+  userId    String
+  workId    String
+}
+
 //바뀔예정 
 enum Role {
   GENERAL
-  EXPERT
   ADMIN
 }
 
