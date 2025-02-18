@@ -30,6 +30,7 @@ const getChallenge = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
   const challenge = await prisma.challenge.findFirstOrThrow({
     where: { id: challengeId },
+    include: { participate: { select: { userId: true } } },
   });
   res.status(200).send(challenge);
 });

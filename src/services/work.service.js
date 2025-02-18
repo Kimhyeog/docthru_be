@@ -11,7 +11,8 @@ const getWorks = asyncHandler(async (req, res, next) => {
     cursor: cursor ? { id: cursor } : undefined,
   });
   const nextCursor = works.length === 5 ? works[works.length - 1].id : null;
-  res.status(200).send({ works, nextCursor });
+  const totalPage = Math.ceil(works.length / 5);
+  res.status(200).send({ works, nextCursor, totalPage });
 });
 
 const getWork = asyncHandler(async (req, res, next) => {
