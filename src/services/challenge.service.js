@@ -2,8 +2,8 @@ const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
 const getChallenges = asyncHandler(async (req, res, next) => {
-  const { cursor, pageSize, keyword, field, docType, progress } = req.query;
-
+  const { page, pageSize, keyword, field, docType, progress } = req.query;
+  const skip = (page - 1) * pageSize;
   const search = {
     OR: keyword
       ? [{ title: { contains: keyword, mode: "insensitive" } }]
@@ -14,22 +14,16 @@ const getChallenges = asyncHandler(async (req, res, next) => {
     application: {
       status: "ACCEPTED",
     },
-    // deadline: {
-    //   gte: new Date(),
-    // },
   };
 
   const challenges = await prisma.challenge.findMany({
     where: search,
     take: pageSize,
-    cursor: cursor ? { id: cursor } : undefined,
+    skip,
   });
-  const nextCursor =
-    challenges.length === pageSize
-      ? challenges[challenges.length - 1].id
-      : null;
-
-  res.status(200).send({ challenges, nextCursor });
+  const totalCount = await prisma.challenge.count({ where: search });
+  const totalPages = Math.ceil(totalCount / pageSize);
+  res.status(200).send({ challenges, totalCount, totalPages });
 });
 
 const getChallenge = asyncHandler(async (req, res, next) => {

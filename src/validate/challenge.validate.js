@@ -5,7 +5,7 @@ const docTypeEnum = z.enum(["BLOG", "OFFICIAL"]);
 const progressEnum = z.enum(["PROGRESS", "COMPLETED"]);
 
 const searchSchema = z.object({
-  cursor: z.string().optional(),
+  page: z.number().int().optional(),
   pageSize: z.number().int().optional(),
   keyword: z.string().optional(),
   field: fieldEnum.optional(),
@@ -30,7 +30,7 @@ const updateChallengeSchema = createChallengeSchema.partial();
 function validateGetChallenges(req, res, next) {
   try {
     const parsedOption = searchSchema.safeParse({
-      cursor: req.query.cursor,
+      page: req.query.page ? Number(req.query.pageSize) : 1,
       pageSize: req.query.pageSize ? Number(req.query.pageSize) : 5,
       keyword: req.query.keyword,
       field: req.query.field,

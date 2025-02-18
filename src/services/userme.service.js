@@ -1,6 +1,16 @@
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
+const getUserData = asyncHandler(async (req, res, next) => {
+  const userId = req.params.userId;
+  const user = await prisma.user.findFirst({
+    where: { id: userId },
+    select: { nickname: true, grade: true, role: true },
+  });
+  if (!user) throw new Error("400/user not found");
+  res.status(200).send(user);
+});
+
 const getUserMe = asyncHandler(async (req, res, next) => {
   const userId = req.userId;
   const user = await prisma.user.findFirst({
@@ -127,5 +137,6 @@ const usersMeService = {
   getOngoingChallenges,
   getCompletedChallenges,
   getApplicaitonChallenges,
+  getUserData,
 };
 module.exports = usersMeService;
