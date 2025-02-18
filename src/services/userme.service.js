@@ -1,4 +1,3 @@
-const { application } = require("express");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
@@ -8,7 +7,7 @@ const getUserMe = asyncHandler(async (req, res, next) => {
     where: {
       id: userId,
     },
-    select: { nickname: true, grade: true },
+    select: { nickname: true, grade: true, role: true },
   });
   if (!user) throw new Error("400/user not found");
   res.status(200).send(user);
@@ -35,8 +34,12 @@ const getOngoingChallenges = asyncHandler(async (req, res, next) => {
     take: pageSize,
     cursor: cursor ? { id: cursor } : undefined,
   });
+  const nextCursor =
+    challenges.length === pageSize
+      ? challenges[challenges.length - 1].id
+      : null;
   if (!challenges) throw new Error("400/challenges not found");
-  res.status(200).send(challenges);
+  res.status(200).send({ challenges, nextCursor });
 });
 
 const getCompletedChallenges = asyncHandler(async (req, res, next) => {
@@ -61,7 +64,11 @@ const getCompletedChallenges = asyncHandler(async (req, res, next) => {
     cursor: cursor ? { id: cursor } : undefined,
   });
   if (!challenges) throw new Error("400/challenges not found");
-  res.status(200).send(challenges);
+  const nextCursor =
+    challenges.length === pageSize
+      ? challenges[challenges.length - 1].id
+      : null;
+  res.status(200).send({ challenges, nextCursor });
 });
 
 const getApplicaitonChallenges = asyncHandler(async (req, res, next) => {
@@ -108,7 +115,11 @@ const getApplicaitonChallenges = asyncHandler(async (req, res, next) => {
     orderBy,
   });
   if (!challenges) throw new Error("400/challenges not found");
-  res.status(200).send(challenges);
+  const nextCursor =
+    challenges.length === pageSize
+      ? challenges[challenges.length - 1].id
+      : null;
+  res.status(200).send({ challenges, nextCursor });
 });
 
 const usersMeService = {

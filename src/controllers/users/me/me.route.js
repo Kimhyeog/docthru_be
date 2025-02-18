@@ -3,7 +3,7 @@ const { authenticatedOnly } = require("../../../middlewares/auth.middleeware");
 const usersMeService = require("../../../services/userme.service");
 const {
   validateGetChallengesByMe,
-} = require("../../../validate/users.vaildate");
+} = require("../../../validate/users.validate");
 
 const meRouter = express.Router();
 
