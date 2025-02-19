@@ -8,8 +8,13 @@ const getFeedbacks = asyncHandler(async (req, res, next) => {
     where: { workId },
     take: pageSize,
     orderBy: { createdAt: "desc" },
+    include: { user: { select: { nickname: true } } },
   });
-  res.status(200).send(feedbacks);
+  const totalCount = await prisma.feedback.count({
+    where: { workId },
+  });
+
+  res.status(200).send({ feedbacks, totalCount });
 });
 
 // challenge의 상태 보고 됬다 안됬다 하게

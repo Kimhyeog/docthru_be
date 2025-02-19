@@ -1,4 +1,3 @@
-const qs = require("qs");
 const { z } = require("zod");
 
 const fieldEnum = z.enum(["NEXTJS", "CAREER", "MODERNJS", "WEB", "API"]);
