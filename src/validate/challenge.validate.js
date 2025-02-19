@@ -1,3 +1,4 @@
+const qs = require("qs");
 const { z } = require("zod");
 
 const fieldEnum = z.enum(["NEXTJS", "CAREER", "MODERNJS", "WEB", "API"]);
@@ -8,7 +9,7 @@ const searchSchema = z.object({
   page: z.number().int().optional(),
   pageSize: z.number().int().optional(),
   keyword: z.string().optional(),
-  field: fieldEnum.optional(),
+  field: z.array(fieldEnum).optional(),
   docType: docTypeEnum.optional(),
   progress: progressEnum.optional(),
 });
@@ -29,13 +30,15 @@ const updateChallengeSchema = createChallengeSchema.partial();
 
 function validateGetChallenges(req, res, next) {
   try {
+    const { page, pageSize, keyword, field, docType, progress } = req.query;
+    console.log(field);
     const parsedOption = searchSchema.safeParse({
-      page: req.query.page ? Number(req.query.page) : 1,
-      pageSize: req.query.pageSize ? Number(req.query.pageSize) : 5,
-      keyword: req.query.keyword,
-      field: req.query.field,
-      docType: req.query.docType,
-      progress: req.query.progress,
+      page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 5,
+      keyword: keyword,
+      field: field ? field.split(",") : undefined, // 여기를 수정
+      docType: docType,
+      progress: progress,
     });
 
     if (!parsedOption.success) {

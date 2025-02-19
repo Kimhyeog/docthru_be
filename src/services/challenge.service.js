@@ -8,7 +8,7 @@ const getChallenges = asyncHandler(async (req, res, next) => {
     OR: keyword
       ? [{ title: { contains: keyword, mode: "insensitive" } }]
       : undefined,
-    field: field ? field : undefined,
+    field: field ? { in: field } : undefined, // <- 문제제
     docType: docType ? docType : undefined,
     progress: progress ? progress : undefined,
     application: {
