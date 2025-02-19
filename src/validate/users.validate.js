@@ -1,7 +1,7 @@
 const { z } = require("zod");
 
 const searchSchema = z.object({
-  cursor: z.string().optional(),
+  page: z.number().int().optional(),
   pageSize: z.number().int().optional(),
   keyword: z.string().optional(),
   option: z
@@ -20,7 +20,7 @@ const searchSchema = z.object({
 function validateGetChallengesByMe(req, res, next) {
   try {
     const parsedOption = searchSchema.safeParse({
-      cursor: req.query.cursor,
+      page: req.query.page ? Number(req.query.page) : 1,
       pageSize: req.query.pageSize ? Number(req.query.pageSize) : 5,
       keyword: req.query.keyword,
       option: req.query.option,

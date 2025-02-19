@@ -4,7 +4,7 @@ const usersMeService = require("../../services/userme.service");
 
 const usersRouter = express.Router();
 
-usersRouter.get("/:userId", usersMeService.getUserData);
 usersRouter.use("/me", meRouter);
+usersRouter.get("/:userId", usersMeService.getUserData);
 
 module.exports = usersRouter;

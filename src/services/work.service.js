@@ -18,8 +18,18 @@ const getWorks = asyncHandler(async (req, res, next) => {
 const getWork = asyncHandler(async (req, res, next) => {
   const workId = req.params.workId;
   const work = await prisma.work.findUnique({ where: { id: workId } });
-  if (!work) throw new Error("404/work not found");
-  res.status(200).send(work);
+  if (!work) return next(new Error("404/work not found"));
+  const userId = req.userId;
+  let isFavorite = false;
+
+  if (userId) {
+    const favorite = await prisma.like.findFirst({
+      where: { userId, workId },
+    });
+    isFavorite = !!favorite;
+  }
+
+  res.status(200).json({ ...work, isFavorite });
 });
 
 const createWork = asyncHandler(async (req, res, next) => {
