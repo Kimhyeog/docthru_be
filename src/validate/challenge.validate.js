@@ -30,7 +30,6 @@ const updateChallengeSchema = createChallengeSchema.partial();
 function validateGetChallenges(req, res, next) {
   try {
     const { page, pageSize, keyword, field, docType, progress } = req.query;
-    console.log(field);
     const parsedOption = searchSchema.safeParse({
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : 5,

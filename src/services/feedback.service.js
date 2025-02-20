@@ -3,10 +3,10 @@ const { asyncHandler } = require("../middlewares/error.middleware");
 
 const getFeedbacks = asyncHandler(async (req, res, next) => {
   const workId = req.params.workId;
-  const { pageSize } = req.query;
+  // const { pageSize } = req.query;
   const feedbacks = await prisma.feedback.findMany({
     where: { workId },
-    take: pageSize,
+    // take: pageSize,
     orderBy: { createdAt: "desc" },
     include: { user: { select: { nickname: true } } },
   });

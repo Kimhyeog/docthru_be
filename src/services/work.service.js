@@ -17,7 +17,10 @@ const getWorks = asyncHandler(async (req, res, next) => {
 
 const getWork = asyncHandler(async (req, res, next) => {
   const workId = req.params.workId;
-  const work = await prisma.work.findUnique({ where: { id: workId } });
+  const work = await prisma.work.findUnique({
+    where: { id: workId },
+    include: { user: { select: { id: true } } },
+  });
   if (!work) return next(new Error("404/work not found"));
   const userId = req.userId;
   let isFavorite = false;
@@ -105,15 +108,16 @@ const updateWork = asyncHandler(async (req, res, next) => {
 const deleteWork = asyncHandler(async (req, res, next) => {
   //
   await prisma.$transaction(async (prisma) => {
-    const challengeId = req.params.challengeId;
+    const workId = req.params.workId;
     const userId = req.userId;
     const work = await prisma.work.findFirst({
-      where: { challengeId, userId, isSubmitted: true },
+      where: { id: workId },
     });
     if (!work) throw new Error("404/work not found");
     // 진행상태 확인해보기
+    const challengeId = work.challengeId;
     const challenge = await prisma.challenge.findFirst({
-      where: { id: work.challengeId },
+      where: { id: challengeId },
       select: { progress: true },
     });
     if (!challenge || challenge.progress === "COMPLETED")

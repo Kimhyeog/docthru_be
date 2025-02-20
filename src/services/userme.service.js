@@ -5,7 +5,7 @@ const getUserData = asyncHandler(async (req, res, next) => {
   const userId = req.params.userId;
   const user = await prisma.user.findFirst({
     where: { id: userId },
-    select: { nickname: true, grade: true, role: true },
+    select: { nickname: true, grade: true, role: true, id: true },
   });
   if (!user) throw new Error("400/user not found");
   res.status(200).send(user);
@@ -17,7 +17,7 @@ const getUserMe = asyncHandler(async (req, res, next) => {
     where: {
       id: userId,
     },
-    select: { nickname: true, grade: true, role: true },
+    select: { id: true, nickname: true, grade: true, role: true },
   });
   if (!user) throw new Error("400/user not found");
   res.status(200).send(user);
