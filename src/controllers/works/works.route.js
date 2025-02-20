@@ -22,7 +22,7 @@ workRouter.post(
   workService.createWork
 );
 // 작업물 삭제
-workRouter.delete("/:challengeId", authenticatedOnly, workService.deleteWork);
+workRouter.delete("/:workId", authenticatedOnly, workService.deleteWork);
 
 // 작업물 수정
 workRouter.put(
