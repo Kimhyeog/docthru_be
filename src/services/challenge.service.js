@@ -89,13 +89,12 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
     if (challenge.deadline < new Date())
       throw new Error("400/the deadline has already passed.");
     // 이미 신청한건지 체크
-    if (challenge.participate.userId === userId)
-      throw new Error("400/already applied");
 
     const existingParticipation = await prisma.participate.findFirst({
       where: { userId, challengeId },
     });
-    if (existingParticipation) throw new Error("400/already applied");
+    console.log(existingParticipation);
+    if (existingParticipation) return;
 
     await prisma.challenge.update({
       where: { id: challengeId },
