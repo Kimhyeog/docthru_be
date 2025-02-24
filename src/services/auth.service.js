@@ -26,24 +26,32 @@ function createToken(data) {
 const signUp = asyncHandler(async (req, res, next) => {
   const { email, password, nickname } = req.body;
   const encryptedPassword = await bcrypt.hash(password, 12);
+  const result = await prisma.$transaction(async (prisma) => {
+    let existingUser = await prisma.user.findUnique({
+      where: { email },
+      omit: { encryptedPassword: true },
+    });
+    if (existingUser) throw new Error("400/사용중인 이메일입니다.");
 
-  let existingUser = await prisma.user.findUnique({
-    where: { email },
-    omit: { encryptedPassword: true },
+    existingUser = await prisma.user.findUnique({
+      where: { nickname },
+      omit: { encryptedPassword: true },
+    });
+    if (existingUser) throw new Error("400/사용중인 닉네임입니다.");
+
+    const newUser = await prisma.user.create({
+      data: { email, encryptedPassword, nickname },
+    });
+    const data = {
+      id: newUser.id,
+      email: newUser.email,
+      nickname: newUser.nickname,
+    };
+    const { accessToken, refreshToken } = createToken(data);
+    return { accessToken, refreshToken, newUser };
   });
-  if (existingUser) throw new Error("400/사용중인 이메일입니다.");
 
-  existingUser = await prisma.user.findUnique({
-    where: { nickname },
-    omit: { encryptedPassword: true },
-  });
-  if (existingUser) throw new Error("400/사용중인 닉네임입니다.");
-
-  const newUser = await prisma.user.create({
-    data: { email, encryptedPassword, nickname },
-  });
-
-  res.status(201).send(newUser);
+  res.status(201).send(result);
 });
 
 const logIn = asyncHandler(async (req, res, next) => {

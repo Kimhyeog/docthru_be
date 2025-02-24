@@ -15,5 +15,5 @@ const updateCompletedChallenges = async () => {
     console.log(e);
   }
 };
-
-cron.schedule("0 15 * * *", updateCompletedChallenges);
+updateCompletedChallenges();
+cron.schedule("0 0 * * *", updateCompletedChallenges);

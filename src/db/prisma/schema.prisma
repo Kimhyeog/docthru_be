@@ -29,19 +29,20 @@ model User {
 }
 
 model Challenge {
-  id              String       @id @default(uuid())
+  id              String        @id @default(uuid())
   title           String
   field           Field
   docType         DocType
   docUrl          String
   deadline        DateTime
-  progress        Progress     @default(PROGRESS)
-  participants    Int          @default(1)
+  progress        Progress      @default(PROGRESS)
+  participants    Int           @default(1)
   maxParticipants Int
   content         String?
   application     Application?
-  participate Participate[]
-  work        Work[]
+  participate     Participate[]
+  work            Work[]
+  appliedAt       DateTime?     @default(now())
 }
 
 model Application {
@@ -72,7 +73,7 @@ model Work {
   challenge      Challenge  @relation(fields: [challengeId], references: [id])
   description    String
   lastModifiedAt DateTime   @default(now())
-  submittedAt    DateTime?   
+  submittedAt    DateTime?
   isSubmitted    Boolean    @default(false)
   userId         String
   challengeId    String
@@ -94,7 +95,7 @@ model Like {
 model Feedback {
   id        String   @id @default(uuid())
   user      User     @relation(fields: [userId], references: [id])
-  work      Work     @relation(fields: [workId], references: [id] ,onDelete:Cascade )
+  work      Work     @relation(fields: [workId], references: [id], onDelete: Cascade)
   content   String
   createdAt DateTime @default(now())
   userId    String
