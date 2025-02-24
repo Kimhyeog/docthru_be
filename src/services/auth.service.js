@@ -26,24 +26,32 @@ function createToken(data) {
 const signUp = asyncHandler(async (req, res, next) => {
   const { email, password, nickname } = req.body;
   const encryptedPassword = await bcrypt.hash(password, 12);
+  const result = await prisma.$transaction(async (prisma) => {
+    let existingUser = await prisma.user.findUnique({
+      where: { email },
+      omit: { encryptedPassword: true },
+    });
+    if (existingUser) throw new Error("400/사용중인 이메일입니다.");
 
-  let existingUser = await prisma.user.findUnique({
-    where: { email },
-    omit: { encryptedPassword: true },
+    existingUser = await prisma.user.findUnique({
+      where: { nickname },
+      omit: { encryptedPassword: true },
+    });
+    if (existingUser) throw new Error("400/사용중인 닉네임입니다.");
+
+    const newUser = await prisma.user.create({
+      data: { email, encryptedPassword, nickname },
+    });
+    const data = {
+      id: newUser.id,
+      email: newUser.email,
+      nickname: newUser.nickname,
+    };
+    const { accessToken, refreshToken } = createToken(data);
+    return { accessToken, refreshToken, newUser };
   });
-  if (existingUser) throw new Error("400/email already exist");
 
-  existingUser = await prisma.user.findUnique({
-    where: { nickname },
-    omit: { encryptedPassword: true },
-  });
-  if (existingUser) throw new Error("400/nickname already exist");
-
-  const newUser = await prisma.user.create({
-    data: { email, encryptedPassword, nickname },
-  });
-
-  res.status(201).send(newUser);
+  res.status(201).send(result);
 });
 
 const logIn = asyncHandler(async (req, res, next) => {
@@ -53,12 +61,12 @@ const logIn = asyncHandler(async (req, res, next) => {
       where: { email },
       select: { encryptedPassword: true },
     });
-    if (!existingUser) throw new Error("401/user does not exist");
+    if (!existingUser) throw new Error("401/존재하지 않는 이메일 입니다.");
     const passwordCheck = await bcrypt.compare(
       password,
       existingUser.encryptedPassword
     );
-    if (!passwordCheck) throw new Error("401/Incorrect password");
+    if (!passwordCheck) throw new Error("401/비밀번호가 일치하지 않습니다.");
 
     const user = await prisma.user.findUniqueOrThrow({
       where: { email },

@@ -2,40 +2,35 @@ const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
 const getChallenges = asyncHandler(async (req, res, next) => {
-  const { cursor, pageSize, keyword, field, docType, progress } = req.query;
-
+  const { page, pageSize, keyword, field, docType, progress } = req.query;
+  const skip = (page - 1) * pageSize;
   const search = {
     OR: keyword
       ? [{ title: { contains: keyword, mode: "insensitive" } }]
       : undefined,
-    field: field ? field : undefined,
+    field: field ? { in: field } : undefined, // <- 문제제
     docType: docType ? docType : undefined,
     progress: progress ? progress : undefined,
     application: {
       status: "ACCEPTED",
     },
-    // deadline: {
-    //   gte: new Date(),
-    // },
   };
 
   const challenges = await prisma.challenge.findMany({
     where: search,
     take: pageSize,
-    cursor: cursor ? { id: cursor } : undefined,
+    skip,
   });
-  const nextCursor =
-    challenges.length === pageSize
-      ? challenges[challenges.length - 1].id
-      : null;
-
-  res.status(200).send({ challenges, nextCursor });
+  const totalCount = await prisma.challenge.count({ where: search });
+  const totalPages = Math.ceil(totalCount / pageSize);
+  res.status(200).send({ challenges, totalCount, totalPages });
 });
 
 const getChallenge = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
   const challenge = await prisma.challenge.findFirstOrThrow({
     where: { id: challengeId },
+    include: { application: { select: { userId: true } } },
   });
   res.status(200).send(challenge);
 });
@@ -62,7 +57,7 @@ const createChallenge = asyncHandler(async (req, res, next) => {
     });
     return newChallenge;
   });
-  res.status(200).send(result);
+  res.status(201).send(result);
 });
 
 const participateChallenge = asyncHandler(async (req, res, next) => {
@@ -77,7 +72,8 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
         id: true,
         participants: true,
         maxParticipants: true,
-        application: { select: { userId: true, status: true } },
+        application: { select: { status: true } },
+        participate: { select: { userId: true } },
         deadline: true,
       },
     });
@@ -93,13 +89,12 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
     if (challenge.deadline < new Date())
       throw new Error("400/the deadline has already passed.");
     // 이미 신청한건지 체크
-    if (challenge.application.userId === userId)
-      throw new Error("400/already applied");
 
     const existingParticipation = await prisma.participate.findFirst({
       where: { userId, challengeId },
     });
-    if (existingParticipation) throw new Error("400/already applied");
+    console.log(existingParticipation);
+    if (existingParticipation) return;
 
     await prisma.challenge.update({
       where: { id: challengeId },
@@ -133,7 +128,7 @@ const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
       where: { id: challengeId },
     });
 
-    const test = await prisma.application.update({
+    await prisma.application.update({
       where: { challengeId },
       data: {
         status: "DELETED",

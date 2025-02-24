@@ -1,0 +1,69 @@
+paths:
+  /works/:challengeId/many:
+    get:
+      summary: "작업물(번역물) 조회"
+      description: "특정 챌린지의 작업물들 조회 (좋아요순으로)"
+      tags:
+        - works
+      parameters:
+        - name: challengeId
+          in: path
+          required: true
+          description: "조회할 챌린지의 ID"
+          schema:
+            type: string
+        - name: cursor
+          in: query
+          required: false
+          description: "페이지네이션을 위한 커서"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "조회 성공"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  works:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "work_123"
+                        challengeId:
+                          type: string
+                          example: "challenge_456"
+                        userId:
+                          type: string
+                          example: "user_456"
+                        description:
+                          type: string
+                          example: "내용들"
+                        likeCount:
+                          type: integer
+                          example: 25
+                        submittedAt:
+                          type: string
+                          format: date-time
+                          example: "2025-02-13T12:34:56Z"
+                        lastModifiedAt:
+                          type: string
+                          format: date-time
+                          example: "2025-02-13T12:34:56Z"
+                        isSubmitted:
+                          type: boolean
+                          example: true
+                  nextCursor:
+                    type: string
+                    nullable: true
+                    example: "work_999"
+        "400":
+          description: "잘못된 요청 (유효하지 않은 파라미터)"
+        "404":
+          description: "해당 챌린지의 작업물이 없음"
+        "500":
+          description: "서버 오류"
