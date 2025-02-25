@@ -11,8 +11,8 @@ const getWorks = asyncHandler(async (req, res, next) => {
     // cursor: cursor ? { id: cursor } : undefined,
   });
   // const nextCursor = works.length === 5 ? works[works.length - 1].id : null;
-  // const totalPage = Math.ceil(works.length / 5);
-  res.status(200).send(works);
+  const totalPage = Math.ceil(works.length / 5);
+  res.status(200).send({ works, totalPage });
 });
 
 const getTopLikedWorks = asyncHandler(async (req, res, next) => {
