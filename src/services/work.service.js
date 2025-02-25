@@ -9,6 +9,9 @@ const getWorks = asyncHandler(async (req, res, next) => {
     // take: 5,
     orderBy: { likeCount: "desc" },
     // cursor: cursor ? { id: cursor } : undefined,
+    include: {
+      user: { select: { id: true, nickname: true, grade: true, role: true } },
+    },
   });
   // const nextCursor = works.length === 5 ? works[works.length - 1].id : null;
   const totalPage = Math.ceil(works.length / 5);
@@ -43,7 +46,9 @@ const getWork = asyncHandler(async (req, res, next) => {
   const workId = req.params.workId;
   const work = await prisma.work.findUnique({
     where: { id: workId },
-    include: { user: { select: { id: true } } },
+    include: {
+      user: { select: { id: true, nickname: true, grade: true, role: true } },
+    },
   });
   if (!work) return next(new Error("404/work not found"));
   const userId = req.userId;
