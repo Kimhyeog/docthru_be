@@ -15,6 +15,30 @@ const getWorks = asyncHandler(async (req, res, next) => {
   res.status(200).send({ works, nextCursor, totalPage });
 });
 
+const getTopLikedWorks = asyncHandler(async (req, res, next) => {
+  const userId = req.userId;
+  const challengeId = req.params.challengeId;
+  const topWork = await prisma.work.findFirst({
+    where: { challengeId },
+    orderBy: { likeCount: "desc" },
+  });
+
+  if (!topWork) return res.status(204).send();
+
+  const works = await prisma.work.findMany({
+    where: { challengeId, likeCount: topWork.likeCount },
+    orderBy: { submittedAt: "desc" },
+    include: {
+      user: { select: { nickname: true, grade: true, role: true } },
+      like: { where: { userId } },
+    },
+  });
+  const topLikedCount = await prisma.work.count({
+    where: { challengeId, likeCount: topWork.likeCount },
+  });
+  res.status(200).send({ works, topLikedCount });
+});
+
 const getWork = asyncHandler(async (req, res, next) => {
   const workId = req.params.workId;
   const work = await prisma.work.findUnique({
@@ -75,6 +99,56 @@ const createWork = asyncHandler(async (req, res, next) => {
     },
   });
   res.status(201).send(work);
+});
+
+const saveWork = asyncHandler(async (req, res, next) => {
+  const challengeId = req.params.challengeId;
+  const userId = req.userId;
+  const { description } = req.body;
+  const participate = await prisma.participate.findFirst({
+    where: { userId, challengeId },
+  });
+  if (!participate)
+    throw new Error("400/This is a challenge you have not participated in");
+  const existingSaved = await prisma.work.findFirst({
+    where: { userId, challengeId, isSubmitted: false },
+  });
+  let work;
+  if (existingSaved) {
+    work = await prisma.work.update({
+      where: { id: existingSaved.id },
+      data: {
+        description,
+        lastModifiedAt: new Date(),
+      },
+    });
+  } else {
+    work = await prisma.work.create({
+      data: {
+        challengeId,
+        userId,
+        description,
+        lastModifiedAt: new Date(),
+        isSubmitted: false,
+      },
+    });
+  }
+
+  res.status(200).send(work);
+});
+
+const getSavedWork = asyncHandler(async (req, res, next) => {
+  const challengeId = req.params.challengeId;
+  const userId = req.userId;
+
+  // 임시 저장된 작업 조회
+  const savedWork = await prisma.work.findFirst({
+    where: { userId, challengeId, isSubmitted: false },
+  });
+
+  if (!savedWork) throw new Error("404/No draft found");
+
+  res.status(200).send(savedWork);
 });
 
 // 수정 및 삭제에서 완료된 챌린지인지 확인하는 것도 필요함
@@ -179,5 +253,8 @@ const workService = {
   deleteWork,
   workLike,
   workDislike,
+  saveWork,
+  getSavedWork,
+  getTopLikedWorks,
 };
 module.exports = workService;

@@ -93,18 +93,22 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
     const existingParticipation = await prisma.participate.findFirst({
       where: { userId, challengeId },
     });
-    console.log(existingParticipation);
-    if (existingParticipation) return;
+    if (!existingParticipation) {
+      await prisma.challenge.update({
+        where: { id: challengeId },
+        data: { participants: { increment: 1 } },
+      });
 
-    await prisma.challenge.update({
-      where: { id: challengeId },
-      data: { participants: { increment: 1 } },
-    });
+      await prisma.participate.create({
+        data: { userId, challengeId },
+      });
+    }
 
-    const participate = await prisma.participate.create({
-      data: { userId, challengeId },
+    const work = await prisma.work.findFirst({
+      where: { userId, challengeId },
+      select: { id: true },
     });
-    return participate;
+    return { workId: work?.id ?? null };
   });
 
   res.status(200).send(result);

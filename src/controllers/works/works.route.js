@@ -14,6 +14,9 @@ const workRouter = express.Router();
 workRouter.get("/:challengeId/many", workService.getWorks);
 // 특정 작업물 조회
 workRouter.get("/:workId", workService.getWork);
+// 좋아요 가장 많은 작품들 조회
+workRouter.get("/:challengeId/topLike", workService.getTopLikedWorks);
+
 // 작업물 생성
 workRouter.post(
   "/:challengeId",
@@ -23,6 +26,20 @@ workRouter.post(
 );
 // 작업물 삭제
 workRouter.delete("/:workId", authenticatedOnly, workService.deleteWork);
+
+//임시저장
+workRouter.post(
+  "/:challengeId/save",
+  validateCreateWork,
+  authenticatedOnly,
+  workService.saveWork
+);
+//임시저장 불러오기
+workRouter.get(
+  "/:challengeId/save",
+  authenticatedOnly,
+  workService.getSavedWork
+);
 
 // 작업물 수정
 workRouter.put(
