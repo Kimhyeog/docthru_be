@@ -6,13 +6,13 @@ const getWorks = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
   const works = await prisma.work.findMany({
     where: { challengeId },
-    take: 5,
+    // take: 5,
     orderBy: { likeCount: "desc" },
-    cursor: cursor ? { id: cursor } : undefined,
+    // cursor: cursor ? { id: cursor } : undefined,
   });
-  const nextCursor = works.length === 5 ? works[works.length - 1].id : null;
-  const totalPage = Math.ceil(works.length / 5);
-  res.status(200).send({ works, nextCursor, totalPage });
+  // const nextCursor = works.length === 5 ? works[works.length - 1].id : null;
+  // const totalPage = Math.ceil(works.length / 5);
+  res.status(200).send(works);
 });
 
 const getTopLikedWorks = asyncHandler(async (req, res, next) => {
