@@ -30,7 +30,15 @@ const getChallenge = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
   const challenge = await prisma.challenge.findFirstOrThrow({
     where: { id: challengeId },
-    include: { application: { select: { userId: true } } },
+    include: {
+      application: {
+        select: {
+          userId: true,
+          invalidatedAt: true,
+          invalidationComment: true,
+        },
+      },
+    },
   });
   res.status(200).send(challenge);
 });
@@ -127,6 +135,7 @@ const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
 
 const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
+  const { invalidationComment } = req.body;
   await prisma.$transaction(async (prisma) => {
     await prisma.challenge.findFirstOrThrow({
       where: { id: challengeId },
@@ -136,6 +145,8 @@ const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
       where: { challengeId },
       data: {
         status: "DELETED",
+        invalidatedAt: new Date(),
+        invalidationComment,
       },
     });
     res.sendStatus(204);

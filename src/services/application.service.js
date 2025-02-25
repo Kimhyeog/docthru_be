@@ -4,8 +4,8 @@ const { asyncHandler } = require("../middlewares/error.middleware");
 //option은 status 로 받고 나머지는 orderBy로
 //마감기한 -> deadline 챌린지 , 신청기한은 challenge의 application의 appliedAt
 const getChallengeByAdmin = asyncHandler(async (req, res, next) => {
-  const { cursor, pageSize, keyword, option } = req.query;
-
+  const { page, pageSize, keyword, option } = req.query;
+  const skip = (page - 1) * pageSize;
   const search = {
     OR: keyword
       ? [{ title: { contains: keyword, mode: "insensitive" } }]
@@ -37,16 +37,14 @@ const getChallengeByAdmin = asyncHandler(async (req, res, next) => {
   const challenges = await prisma.challenge.findMany({
     where: search,
     take: pageSize,
-    cursor: cursor ? { id: cursor } : undefined,
+    skip,
     include: { application: { select: { status: true, appliedAt: true } } },
     orderBy,
   });
-  const nextCursor =
-    challenges.length === pageSize
-      ? challenges[challenges.length - 1].id
-      : null;
+  const totalCount = await prisma.challenge.count({ where: search });
+  const totalPages = Math.ceil(totalCount / pageSize);
 
-  res.status(200).send({ challenges, nextCursor });
+  res.status(200).send({ challenges, totalCount, totalPages });
 });
 
 //승인되기 전꺼만? 삭제?
