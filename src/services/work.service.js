@@ -2,10 +2,9 @@ const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
 
 const getWorks = asyncHandler(async (req, res, next) => {
-  const { cursor } = req.query;
   const challengeId = req.params.challengeId;
   const works = await prisma.work.findMany({
-    where: { challengeId },
+    where: { challengeId, isSubmitted: true },
     // take: 5,
     orderBy: { likeCount: "desc" },
     // cursor: cursor ? { id: cursor } : undefined,
