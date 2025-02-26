@@ -36,6 +36,7 @@ const getChallenge = asyncHandler(async (req, res, next) => {
           userId: true,
           invalidatedAt: true,
           invalidationComment: true,
+          status: true,
         },
       },
     },
