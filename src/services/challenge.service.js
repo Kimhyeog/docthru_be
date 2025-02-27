@@ -114,7 +114,7 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
     }
 
     const work = await prisma.work.findFirst({
-      where: { userId, challengeId },
+      where: { userId, challengeId, isSubmitted: true },
       select: { id: true },
     });
     return { workId: work?.id ?? null };
@@ -123,14 +123,50 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
   res.status(200).send(result);
 });
 
+const deleteParticipate = asyncHandler(async (req, res, next) => {
+  const userId = req.userId;
+  const challengeId = req.params.challengeId;
+  await prisma.$transaction(async (prisma) => {
+    const participate = await prisma.participate.findFirst({
+      where: { challengeId, userId },
+    });
+    if (!participate) throw new Error("404/no participate");
+    await prisma.work.deleteMany({
+      where: { challengeId, userId },
+    });
+    await prisma.participate.delete({
+      where: {
+        userId_challengeId: { userId, challengeId },
+      },
+    });
+    await prisma.challenge.update({
+      where: { id: challengeId },
+      data: { participants: { decrement: 1 } },
+    });
+  });
+  res.sendStatus(204);
+});
+
 //데이러를 destructuring 안하고 data에 다 담아도 문제 없을까?
 const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
   await prisma.challenge.findFirstOrThrow({ where: { id: challengeId } });
+  const { deadline, ...updateData } = req.body;
+
+  if (deadline) {
+    const now = new Date();
+    updateData.deadline = deadline;
+    if (deadline > now) {
+      updateData.progress = "PROGRESS";
+    } else {
+      updateData.progress = "COMPLETED";
+    }
+  }
   const updatedChallenge = await prisma.challenge.update({
     where: { id: challengeId },
-    data: { ...req.body },
+    data: updateData,
   });
+
   res.status(200).send(updatedChallenge);
 });
 
@@ -159,6 +195,7 @@ const challengeService = {
   getChallenge,
   createChallenge,
   participateChallenge,
+  deleteParticipate,
   updateChallengeByAdmin,
   deleteChallengeByAdmin,
 };
