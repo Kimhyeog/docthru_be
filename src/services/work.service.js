@@ -193,6 +193,7 @@ const deleteWork = asyncHandler(async (req, res, next) => {
     const userId = req.userId;
     const work = await prisma.work.findFirst({
       where: { id: workId },
+      include: { user: { select: { id: true } } },
     });
     if (!work) throw new Error("404/work not found");
     // 진행상태 확인해보기
@@ -211,7 +212,7 @@ const deleteWork = asyncHandler(async (req, res, next) => {
         );
     }
     await prisma.participate.delete({
-      where: { userId_challengeId: { userId, challengeId } },
+      where: { userId_challengeId: { userId: work.user.id, challengeId } },
     });
     await prisma.challenge.update({
       where: { id: challengeId },
