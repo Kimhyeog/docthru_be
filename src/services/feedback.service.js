@@ -42,15 +42,18 @@ const updateFeedback = asyncHandler(async (req, res, next) => {
   let feedback = await prisma.feedback.findFirst({
     where: { id: feedbackId },
   });
+  const user = await prisma.user.findFirst({ where: { id: userId } });
+  if (feedback.userId !== userId && user.role !== "ADMIN")
+    throw new Error("401/unathorization");
   const challenge = await prisma.challenge.findFirstOrThrow({
     where: { work: { some: { id: feedback.workId } } },
     select: { progress: true },
   });
   if (!feedback) throw new Error("404/feedback can't found");
-  if (challenge.progress === "COMPLETED")
-    throw new Error("400/challenge not found or challenge already completed");
-
-  if (feedback.userId !== userId) throw new Error("401/unathorization");
+  if (user.role !== "ADMIN") {
+    if (challenge.progress === "COMPLETED")
+      throw new Error("400/challenge not found or challenge already completed");
+  }
   feedback = await prisma.feedback.update({
     where: { id: feedbackId },
     data: {
@@ -68,14 +71,18 @@ const deleteFeedback = asyncHandler(async (req, res, next) => {
     where: { id: feedbackId },
   });
   if (!feedback) throw new Error("404/feedback can't found");
-
+  const user = await prisma.user.findFirst({ where: { id: userId } });
+  if (feedback.userId !== userId && user.role !== "ADMIN")
+    throw new Error("401/unathorization");
   const challenge = await prisma.challenge.findFirstOrThrow({
     where: { work: { some: { id: feedback.workId } } },
     select: { progress: true },
   });
-  if (challenge.progress === "COMPLETED")
-    throw new Error("400/challenge not found or challenge already completed");
-  if (feedback.userId !== userId) throw new Error("401/unathorization");
+  if (user.role !== "ADMIN") {
+    if (challenge.progress === "COMPLETED")
+      throw new Error("400/challenge not found or challenge already completed");
+  }
+
   feedback = await prisma.feedback.delete({
     where: { id: feedbackId },
   });
