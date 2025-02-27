@@ -25,7 +25,9 @@ const createChallengeSchema = z.object({
   content: z.string(),
 });
 
-const updateChallengeSchema = createChallengeSchema.partial();
+const updateChallengeSchema = createChallengeSchema.partial().extend({
+  deadline: z.coerce.date(),
+});
 
 function validateGetChallenges(req, res, next) {
   try {

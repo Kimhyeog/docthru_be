@@ -150,7 +150,7 @@ const getSavedWork = asyncHandler(async (req, res, next) => {
     where: { userId, challengeId, isSubmitted: false },
   });
 
-  if (!savedWork) throw new Error("404/No draft found");
+  if (!savedWork) res.sendStatus(204);
 
   res.status(200).send(savedWork);
 });
