@@ -63,13 +63,17 @@ const deleteNewChallenge = asyncHandler(async (req, res, next) => {
     if (!challenge)
       throw new Error("400/challenge cannot be find or unathorization");
     //2.삭제 진행
-    await prisma.application.delete({
+    await prisma.application.update({
       where: { challengeId },
+      data: {
+        status: "DELETED",
+        invalidatedAt: new Date(),
+        invalidationComment: "해당 계정 사용자가 삭제한 챌린지입니다.",
+      },
     });
-    await prisma.challenge.delete({ where: { id: challengeId } });
   });
   res.sendStatus(204);
-});
+}); //
 
 const updateStatusChallengeByAdmin = asyncHandler(async (req, res, next) => {
   //거절하면 거절 사유랑 거절 시간 업데이트 하기
