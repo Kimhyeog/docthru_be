@@ -117,6 +117,11 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
       where: { userId, challengeId, isSubmitted: true },
       select: { id: true },
     });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { participateCount: { increment: 1 } },
+    });
+
     return { workId: work?.id ?? null };
   });
 
@@ -142,6 +147,10 @@ const deleteParticipate = asyncHandler(async (req, res, next) => {
     await prisma.challenge.update({
       where: { id: challengeId },
       data: { participants: { decrement: 1 } },
+    });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { participateCount: { decrement: 1 } },
     });
   });
   res.sendStatus(204);

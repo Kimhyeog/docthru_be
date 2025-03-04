@@ -19,6 +19,8 @@ model User {
   encryptedPassword String
   nickname          String        @unique
   createdAt         DateTime      @default(now())
+  participateCount Int @default(0)
+  recommendedCount Int @default(0)
   grade             Grade         @default(GENERAL)
   role              Role?         @default(GENERAL)
   application       Application[]
