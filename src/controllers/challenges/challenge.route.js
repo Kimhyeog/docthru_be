@@ -28,6 +28,12 @@ challengeRouter.post(
   authenticatedOnly,
   challengeService.participateChallenge
 );
+
+challengeRouter.delete(
+  "/:challengeId/participation",
+  authenticatedOnly,
+  challengeService.deleteParticipate
+);
 // 어드민 챌린지 수정
 challengeRouter.put(
   "/:challengeId",

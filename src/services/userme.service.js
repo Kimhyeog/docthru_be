@@ -1,6 +1,15 @@
-const { application } = require("express");
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
+
+const getUserData = asyncHandler(async (req, res, next) => {
+  const userId = req.params.userId;
+  const user = await prisma.user.findFirst({
+    where: { id: userId },
+    select: { nickname: true, grade: true, role: true, id: true },
+  });
+  if (!user) throw new Error("400/user not found");
+  res.status(200).send(user);
+});
 
 const getUserMe = asyncHandler(async (req, res, next) => {
   const userId = req.userId;
@@ -8,7 +17,7 @@ const getUserMe = asyncHandler(async (req, res, next) => {
     where: {
       id: userId,
     },
-    select: { nickname: true, grade: true },
+    select: { id: true, nickname: true, grade: true, role: true },
   });
   if (!user) throw new Error("400/user not found");
   res.status(200).send(user);
@@ -16,8 +25,8 @@ const getUserMe = asyncHandler(async (req, res, next) => {
 
 const getOngoingChallenges = asyncHandler(async (req, res, next) => {
   const userId = req.userId;
-  const { cursor, pageSize, keyword } = req.query;
-
+  const { page, pageSize, keyword } = req.query;
+  const skip = (page - 1) * pageSize;
   const search = {
     OR: keyword
       ? [{ title: { contains: keyword, mode: "insensitive" } }]
@@ -33,15 +42,18 @@ const getOngoingChallenges = asyncHandler(async (req, res, next) => {
   const challenges = await prisma.challenge.findMany({
     where: search,
     take: pageSize,
-    cursor: cursor ? { id: cursor } : undefined,
+    skip,
   });
-  if (!challenges) throw new Error("400/challenges not found");
-  res.status(200).send(challenges);
+
+  const totalCount = await prisma.challenge.count({ where: search });
+  const totalPages = Math.ceil(totalCount / pageSize);
+  res.status(200).send({ challenges, totalCount, totalPages });
 });
 
 const getCompletedChallenges = asyncHandler(async (req, res, next) => {
   const userId = req.userId;
-  const { cursor, pageSize, keyword } = req.query;
+  const { page, pageSize, keyword } = req.query;
+  const skip = (page - 1) * pageSize;
 
   const search = {
     OR: keyword
@@ -58,17 +70,18 @@ const getCompletedChallenges = asyncHandler(async (req, res, next) => {
   const challenges = await prisma.challenge.findMany({
     where: search,
     take: pageSize,
-    cursor: cursor ? { id: cursor } : undefined,
+    skip,
   });
-  if (!challenges) throw new Error("400/challenges not found");
-  res.status(200).send(challenges);
+  const totalCount = await prisma.challenge.count({ where: search });
+  const totalPages = Math.ceil(totalCount / pageSize);
+  res.status(200).send({ challenges, totalCount, totalPages });
 });
 
 const getApplicaitonChallenges = asyncHandler(async (req, res, next) => {
   //option 추가해야함
   const userId = req.userId;
-  const { cursor, pageSize, keyword, option } = req.query;
-
+  const { page, pageSize, keyword, option } = req.query;
+  const skip = (page - 1) * pageSize;
   const search = {
     OR: keyword
       ? [{ title: { contains: keyword, mode: "insensitive" } }]
@@ -103,12 +116,13 @@ const getApplicaitonChallenges = asyncHandler(async (req, res, next) => {
   const challenges = await prisma.challenge.findMany({
     where: search,
     take: pageSize,
-    cursor: cursor ? { id: cursor } : undefined,
+    skip,
     include: { application: { select: { status: true, appliedAt: true } } },
     orderBy,
   });
-  if (!challenges) throw new Error("400/challenges not found");
-  res.status(200).send(challenges);
+  const totalCount = await prisma.challenge.count({ where: search });
+  const totalPages = Math.ceil(totalCount / pageSize);
+  res.status(200).send({ challenges, totalCount, totalPages });
 });
 
 const usersMeService = {
@@ -116,5 +130,6 @@ const usersMeService = {
   getOngoingChallenges,
   getCompletedChallenges,
   getApplicaitonChallenges,
+  getUserData,
 };
 module.exports = usersMeService;

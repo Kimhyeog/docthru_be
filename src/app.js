@@ -6,6 +6,7 @@ const swaggerUi = require("swagger-ui-express");
 const router = require("./controllers/route");
 const { errorHandler } = require("./middlewares/error.middleware");
 const swaggerSpec = require("../config/swagger");
+require("./utils/challengeScheduler");
 
 const app = express();
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

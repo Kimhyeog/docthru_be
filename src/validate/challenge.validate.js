@@ -5,10 +5,10 @@ const docTypeEnum = z.enum(["BLOG", "OFFICIAL"]);
 const progressEnum = z.enum(["PROGRESS", "COMPLETED"]);
 
 const searchSchema = z.object({
-  cursor: z.string().optional(),
+  page: z.number().int().optional(),
   pageSize: z.number().int().optional(),
   keyword: z.string().optional(),
-  field: fieldEnum.optional(),
+  field: z.array(fieldEnum).optional(),
   docType: docTypeEnum.optional(),
   progress: progressEnum.optional(),
 });
@@ -25,17 +25,20 @@ const createChallengeSchema = z.object({
   content: z.string(),
 });
 
-const updateChallengeSchema = createChallengeSchema.partial();
+const updateChallengeSchema = createChallengeSchema.partial().extend({
+  deadline: z.coerce.date(),
+});
 
 function validateGetChallenges(req, res, next) {
   try {
+    const { page, pageSize, keyword, field, docType, progress } = req.query;
     const parsedOption = searchSchema.safeParse({
-      cursor: req.query.cursor,
-      pageSize: req.query.pageSize ? Number(req.query.pageSize) : 5,
-      keyword: req.query.keyword,
-      field: req.query.field,
-      docType: req.query.docType,
-      progress: req.query.progress,
+      page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 5,
+      keyword: keyword,
+      field: field ? field.split(",") : undefined, // 여기를 수정
+      docType: docType,
+      progress: progress,
     });
 
     if (!parsedOption.success) {
