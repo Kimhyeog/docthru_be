@@ -60,7 +60,22 @@ const getWork = asyncHandler(async (req, res, next) => {
     isFavorite = !!favorite;
   }
 
-  res.status(200).json({ ...work, isFavorite });
+  res.status(200).send({ ...work, isFavorite });
+});
+
+const getMyWork = asyncHandler(async (req, res, next) => {
+  const challengeId = req.params.challengeId;
+  const userId = req.userId;
+
+  const work = await prisma.work.findFirst({
+    where: { challengeId, userId, isSubmitted: true },
+    select: { id: true },
+  });
+
+  if (!work) {
+    return res.status(200).send({ existWork: false });
+  }
+  res.status(200).send({ existWork: true, work });
 });
 
 const createWork = asyncHandler(async (req, res, next) => {
@@ -269,5 +284,6 @@ const workService = {
   saveWork,
   getSavedWork,
   getTopLikedWorks,
+  getMyWork,
 };
 module.exports = workService;

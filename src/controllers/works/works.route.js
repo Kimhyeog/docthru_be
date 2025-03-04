@@ -16,6 +16,12 @@ workRouter.get("/:challengeId/many", workService.getWorks);
 workRouter.get("/:workId", workService.getWork);
 // 좋아요 가장 많은 작품들 조회
 workRouter.get("/:challengeId/topLike", workService.getTopLikedWorks);
+// 나의 작업물 조회
+workRouter.get(
+  "/:challengeId/myWork",
+  authenticatedOnly,
+  workService.getMyWork
+);
 
 // 작업물 생성
 workRouter.post(
