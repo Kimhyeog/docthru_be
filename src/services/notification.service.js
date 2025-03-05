@@ -57,7 +57,7 @@ const notifyNewFeedback = async (title, writerId, workId) => {
     where: { id: workId },
     select: { userId: true },
   });
-  const message = `${title}에 도전한 작업물에 피드백이 추가되었어요`;
+  const message = `${title} 챌린지에 도전한 작업물에 피드백이 추가되었어요`;
   const userId = work.userId;
   if (userId !== writerId) createNotification(userId, message, null, workId);
 };
@@ -71,11 +71,27 @@ const getUserNotifications = asyncHandler(async (req, res, next) => {
   res.status(200).send(notifications);
 });
 
+const deleteUserNotification = asyncHandler(async (req, res, next) => {
+  const notificationId = req.params.notificationId;
+
+  const notification = await prisma.notification.findUnique({
+    where: { id: notificationId },
+  });
+
+  if (!notification) {
+    return res.status(404).send({ message: "Notification not found" });
+  }
+
+  await prisma.notification.delete({ where: { id: notificationId } });
+  res.sendStatus(204);
+});
+
 const notificationService = {
   notifyChallengeStatus,
   notifyNewWork,
   notifyNewFeedback,
   getUserNotifications,
+  deleteUserNotification,
 };
 
 module.exports = notificationService;

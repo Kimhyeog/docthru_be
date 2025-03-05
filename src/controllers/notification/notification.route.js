@@ -10,4 +10,11 @@ notificationRouter.get(
   authenticatedOnly,
   notificationService.getUserNotifications
 );
+
+notificationRouter.delete(
+  "/:notificationId",
+  authenticatedOnly,
+  notificationService.deleteUserNotification
+);
+
 module.exports = notificationRouter;
