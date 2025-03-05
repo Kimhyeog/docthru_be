@@ -1,5 +1,6 @@
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
+const notificationService = require("./notification.service");
 
 const getWorks = asyncHandler(async (req, res, next) => {
   const challengeId = req.params.challengeId;
@@ -77,45 +78,51 @@ const getMyWork = asyncHandler(async (req, res, next) => {
 });
 
 const createWork = asyncHandler(async (req, res, next) => {
-  const challengeId = req.params.challengeId;
-  const userId = req.userId;
-  const { description } = req.body;
-  // 챌린지가 있는지 확인
-  const challenge = await prisma.challenge.findFirst({
-    where: { id: challengeId, application: { status: "ACCEPTED" } },
-  });
-  if (!challenge) throw new Error("400/challenge not found");
-  // 챌린지에 참여했는지 확인
-  const participate = await prisma.participate.findFirst({
-    where: { userId, challengeId },
-  });
-  if (!participate)
-    throw new Error("400/This is a challenge you have not participated in");
+  const result = await prisma.$transaction(async () => {
+    const challengeId = req.params.challengeId;
+    const userId = req.userId;
+    const { description } = req.body;
+    // 챌린지가 있는지 확인
+    const challenge = await prisma.challenge.findFirst({
+      where: { id: challengeId, application: { status: "ACCEPTED" } },
+    });
+    if (!challenge) throw new Error("400/challenge not found");
+    // 챌린지에 참여했는지 확인
+    const participate = await prisma.participate.findFirst({
+      where: { userId, challengeId },
+    });
+    if (!participate)
+      throw new Error("400/This is a challenge you have not participated in");
 
-  const existingWork = await prisma.work.findFirst({
-    where: { userId, challengeId, isSubmitted: true },
-  });
-  if (existingWork) throw new Error("400/you already create work");
-  //마감시간 확인
-  const challengeProgess = await prisma.challenge.findFirst({
-    where: { id: challengeId },
-    select: { progress: true },
-  });
-  if (!challengeProgess || challengeProgess.progress === "COMPLETED")
-    throw new Error("400/challenge not found or challenge already completed");
+    const existingWork = await prisma.work.findFirst({
+      where: { userId, challengeId, isSubmitted: true },
+    });
+    if (existingWork) throw new Error("400/you already create work");
+    //마감시간 확인
+    const challengeProgess = await prisma.challenge.findFirst({
+      where: { id: challengeId },
+      select: { progress: true },
+    });
+    if (!challengeProgess || challengeProgess.progress === "COMPLETED")
+      throw new Error("400/challenge not found or challenge already completed");
 
-  //조건이 만족 되면 만드는데 바디에서 번역문을 받아야함
-  const work = await prisma.work.create({
-    data: {
-      challengeId,
-      userId,
-      description,
-      lastModifiedAt: new Date(),
-      submittedAt: new Date(),
-      isSubmitted: true,
-    },
+    //조건이 만족 되면 만드는데 바디에서 번역문을 받아야함
+    const work = await prisma.work.create({
+      data: {
+        challengeId,
+        userId,
+        description,
+        lastModifiedAt: new Date(),
+        submittedAt: new Date(),
+        isSubmitted: true,
+      },
+    });
+
+    notificationService.notifyNewWork(challengeId, userId, work.id);
+    return work;
   });
-  res.status(201).send(work);
+
+  res.status(201).send(result);
 });
 
 const saveWork = asyncHandler(async (req, res, next) => {
