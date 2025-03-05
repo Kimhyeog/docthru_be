@@ -1,5 +1,6 @@
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
+const notificationService = require("./notification.service");
 
 const getChallenges = asyncHandler(async (req, res, next) => {
   const { page, pageSize, keyword, field, docType, progress } = req.query;
@@ -171,10 +172,13 @@ const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
       updateData.progress = "COMPLETED";
     }
   }
+
   const updatedChallenge = await prisma.challenge.update({
     where: { id: challengeId },
     data: updateData,
   });
+
+  notificationService.notifyChallengeStatus(challengeId, "수정");
 
   res.status(200).send(updatedChallenge);
 });
@@ -195,6 +199,8 @@ const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
         invalidationComment,
       },
     });
+    notificationService.notifyChallengeStatus(challengeId, "삭제");
+
     res.sendStatus(204);
   });
 });
