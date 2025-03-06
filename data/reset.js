@@ -11,6 +11,11 @@ async function main() {
     await prisma.participate.deleteMany({});
     await prisma.application.deleteMany({});
     await prisma.challenge.deleteMany({});
+
+    // 관련된 Notification 데이터 삭제 (User와 관련된 Notification을 먼저 삭제)
+    await prisma.notification.deleteMany({});
+
+    // 마지막으로 User 삭제
     await prisma.user.deleteMany({});
 
     console.log(" reset complete!");

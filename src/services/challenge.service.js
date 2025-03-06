@@ -166,7 +166,7 @@ const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
 
   if (deadline) {
     const now = new Date();
-    updateData.deadline = deadline;
+    updateData.deadline = new Date(deadline);
     if (deadline > now) {
       updateData.progress = "PROGRESS";
     } else {
