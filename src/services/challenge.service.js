@@ -21,6 +21,7 @@ const getChallenges = asyncHandler(async (req, res, next) => {
     where: search,
     take: pageSize,
     skip,
+    orderBy: [{ progress: "asc" }, { deadline: "asc" }],
   });
   const totalCount = await prisma.challenge.count({ where: search });
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -91,9 +92,6 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
     if (!challenge.application || challenge.application.status !== "ACCEPTED") {
       throw new Error("400/The challenge is not open for participation.");
     }
-    // 남은자리 체크
-    if (challenge.participants >= challenge.maxParticipants)
-      throw new Error("400/the challenge is fully booked");
     // 데드라인이 유효한지 체크
 
     if (challenge.deadline < new Date())
@@ -104,6 +102,9 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
       where: { userId, challengeId },
     });
     if (!existingParticipation) {
+      // 남은자리 체크
+      if (challenge.participants >= challenge.maxParticipants)
+        throw new Error("400/the challenge is fully booked");
       await prisma.challenge.update({
         where: { id: challengeId },
         data: { participants: { increment: 1 } },
