@@ -167,10 +167,13 @@ const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
   if (deadline) {
     const now = new Date();
     updateData.deadline = new Date(deadline);
-    if (deadline > now) {
+    console.log(now, deadline, updateData.deadline);
+    if (updateData.deadline > now) {
       updateData.progress = "PROGRESS";
+      console.log("1");
     } else {
       updateData.progress = "COMPLETED";
+      console.log("2");
     }
   }
 
@@ -180,7 +183,7 @@ const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
   });
 
   notificationService.notifyChallengeStatus(challengeId, "수정");
-
+  console.log(updatedChallenge);
   res.status(200).send(updatedChallenge);
 });
 
