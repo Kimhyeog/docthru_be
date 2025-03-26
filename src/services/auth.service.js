@@ -48,6 +48,7 @@ const signUp = asyncHandler(async (req, res, next) => {
       nickname: newUser.nickname,
     };
     const { accessToken, refreshToken } = createToken(data);
+
     return { accessToken, refreshToken, newUser };
   });
 
@@ -86,6 +87,9 @@ const logIn = asyncHandler(async (req, res, next) => {
 const refreshToken = asyncHandler(async (req, res, next) => {
   const { refreshToken: prevRefreshToken } = req.body;
   const { sub, email, nickname } = jwt.verify(prevRefreshToken, jwtSecretKey);
+  if (!storedRefreshToken || storedRefreshToken !== prevRefreshToken) {
+    throw new Error("401/유효하지 않은 Refresh Token 입니다.");
+  }
   const data = {
     id: sub,
     email,
@@ -95,6 +99,11 @@ const refreshToken = asyncHandler(async (req, res, next) => {
   res.status(200).send({ accessToken, refreshToken });
 });
 
-const authService = { signUp, logIn, refreshToken };
+const logOut = asyncHandler(async (req, res, next) => {
+  const { userId } = req.body;
+
+  res.status(200).send({ message: "✅ 로그아웃 성공" });
+});
+const authService = { signUp, logIn, logOut, refreshToken };
 
 module.exports = authService;

@@ -1,5 +1,6 @@
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
+const notificationService = require("./notification.service");
 
 //option은 status 로 받고 나머지는 orderBy로
 //마감기한 -> deadline 챌린지 , 신청기한은 challenge의 application의 appliedAt
@@ -96,6 +97,7 @@ const updateStatusChallengeByAdmin = asyncHandler(async (req, res, next) => {
       await prisma.participate.create({
         data: { userId: challengeOwnerId, challengeId },
       });
+      notificationService.notifyChallengeStatus(challengeId, "승인");
     } else if (status === "REJECTED") {
       updatedApplication = await prisma.application.update({
         where: { challengeId },
@@ -104,6 +106,7 @@ const updateStatusChallengeByAdmin = asyncHandler(async (req, res, next) => {
           invalidationComment,
         },
       });
+      notificationService.notifyChallengeStatus(challengeId, "거절");
     }
     return updatedApplication;
   });

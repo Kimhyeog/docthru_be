@@ -1,5 +1,6 @@
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
+const notificationService = require("./notification.service");
 
 const getFeedbacks = asyncHandler(async (req, res, next) => {
   const workId = req.params.workId;
@@ -23,7 +24,7 @@ const createFeedback = asyncHandler(async (req, res, next) => {
   const workId = req.params.workId;
   const challenge = await prisma.challenge.findFirstOrThrow({
     where: { work: { some: { id: workId } } },
-    select: { progress: true },
+    select: { progress: true, title: true },
   });
   if (challenge.progress === "COMPLETED")
     throw new Error("400/challenge not found or challenge already completed");
@@ -31,6 +32,7 @@ const createFeedback = asyncHandler(async (req, res, next) => {
   const feedback = await prisma.feedback.create({
     data: { userId, workId, content },
   });
+  notificationService.notifyNewFeedback(challenge.title, userId, workId);
   res.status(200).send(feedback);
 });
 

@@ -1,5 +1,6 @@
 const prisma = require("../db/prisma/client");
 const { asyncHandler } = require("../middlewares/error.middleware");
+const notificationService = require("./notification.service");
 
 const getChallenges = asyncHandler(async (req, res, next) => {
   const { page, pageSize, keyword, field, docType, progress } = req.query;
@@ -20,6 +21,7 @@ const getChallenges = asyncHandler(async (req, res, next) => {
     where: search,
     take: pageSize,
     skip,
+    orderBy: [{ progress: "asc" }, { deadline: "asc" }],
   });
   const totalCount = await prisma.challenge.count({ where: search });
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -90,9 +92,6 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
     if (!challenge.application || challenge.application.status !== "ACCEPTED") {
       throw new Error("400/The challenge is not open for participation.");
     }
-    // 남은자리 체크
-    if (challenge.participants >= challenge.maxParticipants)
-      throw new Error("400/the challenge is fully booked");
     // 데드라인이 유효한지 체크
 
     if (challenge.deadline < new Date())
@@ -103,6 +102,9 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
       where: { userId, challengeId },
     });
     if (!existingParticipation) {
+      // 남은자리 체크
+      if (challenge.participants >= challenge.maxParticipants)
+        throw new Error("400/the challenge is fully booked");
       await prisma.challenge.update({
         where: { id: challengeId },
         data: { participants: { increment: 1 } },
@@ -117,6 +119,11 @@ const participateChallenge = asyncHandler(async (req, res, next) => {
       where: { userId, challengeId, isSubmitted: true },
       select: { id: true },
     });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { participateCount: { increment: 1 } },
+    });
+
     return { workId: work?.id ?? null };
   });
 
@@ -143,6 +150,10 @@ const deleteParticipate = asyncHandler(async (req, res, next) => {
       where: { id: challengeId },
       data: { participants: { decrement: 1 } },
     });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { participateCount: { decrement: 1 } },
+    });
   });
   res.sendStatus(204);
 });
@@ -155,18 +166,24 @@ const updateChallengeByAdmin = asyncHandler(async (req, res, next) => {
 
   if (deadline) {
     const now = new Date();
-    updateData.deadline = deadline;
-    if (deadline > now) {
+    updateData.deadline = new Date(deadline);
+    console.log(now, deadline, updateData.deadline);
+    if (updateData.deadline > now) {
       updateData.progress = "PROGRESS";
+      console.log("1");
     } else {
       updateData.progress = "COMPLETED";
+      console.log("2");
     }
   }
+
   const updatedChallenge = await prisma.challenge.update({
     where: { id: challengeId },
     data: updateData,
   });
 
+  notificationService.notifyChallengeStatus(challengeId, "수정");
+  console.log(updatedChallenge);
   res.status(200).send(updatedChallenge);
 });
 
@@ -186,6 +203,8 @@ const deleteChallengeByAdmin = asyncHandler(async (req, res, next) => {
         invalidationComment,
       },
     });
+    notificationService.notifyChallengeStatus(challengeId, "삭제");
+
     res.sendStatus(204);
   });
 });

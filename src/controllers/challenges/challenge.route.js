@@ -28,7 +28,7 @@ challengeRouter.post(
   authenticatedOnly,
   challengeService.participateChallenge
 );
-
+// 챌린지 포기하기
 challengeRouter.delete(
   "/:challengeId/participation",
   authenticatedOnly,
